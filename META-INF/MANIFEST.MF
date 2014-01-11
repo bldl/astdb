@@ -3,7 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Magnolia Backend
 Bundle-SymbolicName: magnolia-back
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: magnolia_back.Activator
-Require-Bundle: org.eclipse.core.runtime
+Bundle-Activator: org.magnolialang.backend.MagnoliaBackendPlugin
+Require-Bundle: org.eclipse.core.runtime,
+ pgf-experimental;bundle-version="0.1.0",
+ nuthatch;bundle-version="0.99.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7

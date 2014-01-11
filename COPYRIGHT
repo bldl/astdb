@@ -1,0 +1,42 @@
+The Magnolia Programming Language Backend
+-----------------------------------------
+
+Copyright (c) 2014 University of Bergen
+Copyright (c) 2014 Anya Helene Bagge and other authors
+
+Magnolia is dual licensed under the GNU General Public License version 3 (or, at your
+option, any later version) and the Eclipse Public License v1.0. You may distribute the software
+under the terms of either license.
+
+Any files that are not dual licensed or have a deviating license are marked with the
+specific license that applies.
+
+Note that, due to incompatibilites between the GNU General Public License (GPL) and the
+Eclipse Public License (EPL), you cannot distribute this software under the GPL if it is
+bundled with software licensed under the EPL (such as Eclipse, Rascal or PDB values).
+
+
+GPL notice:
+	(See the file COPYING.GPL for the full text of the GPL license)
+	
+	This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    
+EPL notice:
+	(See the file COPYING.EPL for the full text of the EPL license)
+	
+    All rights reserved. This program and the accompanying materials
+ 	are made available under the terms of the Eclipse Public License v1.0
+	which accompanies this distribution, and is available at
+	http://www.eclipse.org/legal/epl-v10.html
+    
