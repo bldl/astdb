@@ -1,6 +1,7 @@
 package org.magnolialang.magnolia.repr;
 
 import nuthatch.tree.TreeCursor;
+import nuthatch.tree.TreeHandle;
 import nuthatch.tree.impl.AbstractTreeCursor;
 
 import org.magnolialang.magnolia.repr.ASTCursor.ASTHandle;
@@ -93,7 +94,7 @@ public class ASTCursor extends AbstractTreeCursor<Identity, Kind, ASTHandle> {
 
 
 	@Override
-	public boolean subtreeEquals(TreeCursor<Identity, Kind> other) {
+	public boolean subtreeEquals(TreeHandle<Identity, Kind> other) {
 		if(other instanceof ASTCursor) {
 			ASTHandle otherHandle = ((ASTCursor) other).getCurrent();
 			if(getCurrent().ast == otherHandle.ast && getCurrent().id == otherHandle.id) {
