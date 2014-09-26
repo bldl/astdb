@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Magnolia Backend
 Bundle-SymbolicName: astdb
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: org.magnolialang.backend.MagnoliaBackendPlugin
+Bundle-Activator: org.magnolialang.eclipse.AstDbPlugin
 Require-Bundle: org.eclipse.core.runtime,
  pgf-experimental;bundle-version="0.1.0",
  nuthatch;bundle-version="0.99.0",

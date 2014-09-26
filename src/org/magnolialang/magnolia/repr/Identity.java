@@ -5,6 +5,12 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A unique identity that identifies a node, possibly across multiple trees.
+ * 
+ * Identitise are reference-equal.
+ * 
+ */
 public interface Identity extends Comparable<Identity> {
 	/**
 	 * 
