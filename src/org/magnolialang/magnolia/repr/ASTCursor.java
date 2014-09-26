@@ -65,7 +65,7 @@ public class ASTCursor extends AbstractTreeCursor<Identity, Kind, ASTHandle> {
 
 
 	@Override
-	public int getNumChildren() {
+	public int getArity() {
 		return getCurrent().ast.getNumChildren(getCurrent().id);
 	}
 
