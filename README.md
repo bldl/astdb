@@ -1,10 +1,10 @@
-# magnolia-back
+# AstDB
 
-Experimental multi-target backend for Magnolia
+Experimental database for abstract syntax trees
 
 
 ## Authors
 
  * Anya Helene Bagge, University of Bergen
- * Andreas Hjortland, University of Bergen
+ * Patrick Monslaup, University of Bergen
  
