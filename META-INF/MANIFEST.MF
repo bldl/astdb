@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Magnolia Backend
-Bundle-SymbolicName: magnolia-back
+Bundle-SymbolicName: astdb
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.magnolialang.backend.MagnoliaBackendPlugin
 Require-Bundle: org.eclipse.core.runtime,
