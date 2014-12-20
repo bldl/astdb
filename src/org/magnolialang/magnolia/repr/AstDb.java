@@ -1,6 +1,6 @@
 package org.magnolialang.magnolia.repr;
 
-public interface AST {
+public interface AstDb {
 
 	ASTCursor getChild(Identity id, int i);
 

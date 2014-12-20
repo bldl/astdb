@@ -6,19 +6,36 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.magnolialang.magnolia.repr.AST;
 import org.magnolialang.magnolia.repr.ASTCursor;
+import org.magnolialang.magnolia.repr.AstDb;
 import org.magnolialang.magnolia.repr.Identity;
 import org.magnolialang.magnolia.repr.Key;
 import org.magnolialang.magnolia.repr.Kind;
 
-public class AbstractAST implements AST {
+public class AbstractAST implements AstDb {
+	static class Entry {
+		Map<Key<?>, Object> data = new HashMap<Key<?>, Object>();
+
+
+		<T> T get(Key<T> key) {
+			return (T) data.get(key);
+		}
+
+
+		<T> void put(Key<T> key, T value) {
+			data.put(key, value);
+		}
+
+	}
+
 	Map<Identity, Entry> map = new IdentityHashMap<Identity, Entry>();
 	Map<Identity, List<Identity>> tree = new IdentityHashMap<Identity, List<Identity>>();
 	protected static final Key<?> DATAKEY = new Key<Object>() {
 	};
 	protected static final Key<String> NAMEKEY = new Key<String>() {
 	};
+
+
 	protected static final Key<Kind> KINDKEY = new Key<Kind>() {
 	};
 
@@ -49,6 +66,15 @@ public class AbstractAST implements AST {
 	@Override
 	public <V> V getData(Identity id, Key<V> key) {
 		return getEntry(id).get(key);
+	}
+
+
+	protected Entry getEntry(Identity id) {
+		Entry entry = map.get(id);
+		if(entry == null) {
+			throw new NoSuchElementException();
+		}
+		return entry;
 	}
 
 
@@ -83,29 +109,5 @@ public class AbstractAST implements AST {
 	@Override
 	public boolean hasData(Identity id, Key<?> key) {
 		return getData(id, key) != null;
-	}
-
-
-	protected Entry getEntry(Identity id) {
-		Entry entry = map.get(id);
-		if(entry == null) {
-			throw new NoSuchElementException();
-		}
-		return entry;
-	}
-
-
-	static class Entry {
-		Map<Key<?>, Object> data = new HashMap<Key<?>, Object>();
-
-
-		<T> T get(Key<T> key) {
-			return (T) data.get(key);
-		}
-
-
-		<T> void put(Key<T> key, T value) {
-			data.put(key, value);
-		}
 	}
 }

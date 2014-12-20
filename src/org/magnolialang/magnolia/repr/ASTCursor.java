@@ -7,8 +7,16 @@ import nuthatch.tree.impl.AbstractTreeCursor;
 import org.magnolialang.magnolia.repr.ASTCursor.ASTHandle;
 
 public class ASTCursor extends AbstractTreeCursor<Identity, Kind, ASTHandle> {
-	public ASTCursor(AST ast, Identity id) {
-		this(new ASTHandle(ast, id));
+	static class ASTHandle {
+		public final AstDb ast;
+		public final Identity id;
+
+
+		public ASTHandle(AstDb ast, Identity id) {
+			super();
+			this.ast = ast;
+			this.id = id;
+		}
 	}
 
 
@@ -24,6 +32,11 @@ public class ASTCursor extends AbstractTreeCursor<Identity, Kind, ASTHandle> {
 	}
 
 
+	public ASTCursor(AstDb ast, Identity id) {
+		this(new ASTHandle(ast, id));
+	}
+
+
 	protected ASTCursor(ASTHandle tree) {
 		super(tree);
 	}
@@ -36,7 +49,7 @@ public class ASTCursor extends AbstractTreeCursor<Identity, Kind, ASTHandle> {
 
 
 	@Override
-	public ASTCursor copyAndReplaceSubtree(TreeCursor<Identity, Kind> replacement) {
+	public ASTCursor copyAndReplaceSubtree(TreeCursor<Identity, Kind> replacement) { //TODO hvorfor er dette unupported?
 		throw new UnsupportedOperationException();
 	}
 
@@ -44,6 +57,19 @@ public class ASTCursor extends AbstractTreeCursor<Identity, Kind, ASTHandle> {
 	@Override
 	public ASTCursor copySubtree() {
 		return new ASTCursor(this, false);
+	}
+
+
+	@Override
+	public int getArity() {
+		return getCurrent().ast.getNumChildren(getCurrent().id);
+	}
+
+
+	@Override
+	protected ASTHandle getChild(int i) {
+		ASTHandle node = getCurrent();
+		return new ASTHandle(node.ast, node.ast.getChildId(node.id, i));
 	}
 
 
@@ -61,12 +87,6 @@ public class ASTCursor extends AbstractTreeCursor<Identity, Kind, ASTHandle> {
 	@Override
 	public String getName() {
 		return getCurrent().ast.getName(getCurrent().id);
-	}
-
-
-	@Override
-	public int getArity() {
-		return getCurrent().ast.getNumChildren(getCurrent().id);
 	}
 
 
@@ -94,6 +114,12 @@ public class ASTCursor extends AbstractTreeCursor<Identity, Kind, ASTHandle> {
 
 
 	@Override
+	protected ASTHandle replaceChild(ASTHandle node, ASTHandle child, int i) {
+		throw new UnsupportedOperationException();
+	}
+
+
+	@Override
 	public boolean subtreeEquals(TreeHandle<Identity, Kind> other) {
 		if(other instanceof ASTCursor) {
 			ASTHandle otherHandle = ((ASTCursor) other).getCurrent();
@@ -101,33 +127,7 @@ public class ASTCursor extends AbstractTreeCursor<Identity, Kind, ASTHandle> {
 				return true;
 			}
 		}
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(); //TODO hvorfor unsupported istedenfor "false"?
 
-	}
-
-
-	@Override
-	protected ASTHandle getChild(int i) {
-		ASTHandle node = getCurrent();
-		return new ASTHandle(node.ast, node.ast.getChildId(node.id, i));
-	}
-
-
-	@Override
-	protected ASTHandle replaceChild(ASTHandle node, ASTHandle child, int i) {
-		throw new UnsupportedOperationException();
-	}
-
-
-	static class ASTHandle {
-		public final AST ast;
-		public final Identity id;
-
-
-		public ASTHandle(AST ast, Identity id) {
-			super();
-			this.ast = ast;
-			this.id = id;
-		}
 	}
 }
