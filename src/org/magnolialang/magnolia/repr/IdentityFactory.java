@@ -4,6 +4,7 @@ import org.magnolialang.magnolia.repr.impl.AnonIdentity;
 import org.magnolialang.magnolia.repr.impl.NamedIdentity;
 
 public class IdentityFactory {
+
 	public static Identity makeId() {
 		return new AnonIdentity();
 	}

@@ -12,30 +12,9 @@ import java.util.Map;
  * 
  */
 public interface Identity extends Comparable<Identity> {
-	/**
-	 * 
-	 * Compare.
-	 * 
-	 * The order is arbitrary, but consistent.
-	 * 
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
-	@Override
-	public int compareTo(Identity other);
-
-
-	/**
-	 * @param other
-	 *            Other object
-	 * @return True if the two identities are exactly the same.
-	 */
-	@Override
-	public boolean equals(Object other);
-
 
 	/**
 	 * An identity domain provides a way to map identities to and from integers.
-	 * 
 	 */
 	static class Domain {
 		private final List<Identity> idents = new ArrayList<Identity>();
@@ -68,4 +47,25 @@ public interface Identity extends Comparable<Identity> {
 		}
 
 	}
+
+
+	/**
+	 * 
+	 * Compare.
+	 * 
+	 * The order is arbitrary, but consistent.
+	 * 
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	@Override
+	public int compareTo(Identity other);
+
+
+	/**
+	 * @param other
+	 *            Other object
+	 * @return True if the two identities are exactly the same.
+	 */
+	@Override
+	public boolean equals(Object other);
 }

@@ -8,8 +8,12 @@ public class AstDbPlugin implements BundleActivator {
 	public static final String PLUGIN_ID = "astdb";
 
 
-	public AstDbPlugin() {
+	static BundleContext getContext() {
+		return context;
+	}
 
+
+	public AstDbPlugin() {
 	}
 
 
@@ -22,11 +26,6 @@ public class AstDbPlugin implements BundleActivator {
 	@Override
 	public void stop(BundleContext bundleContext) throws Exception {
 		AstDbPlugin.context = null;
-	}
-
-
-	static BundleContext getContext() {
-		return context;
 	}
 
 }
