@@ -30,8 +30,6 @@ public class MongoAST implements AstDb {
 		<T> void put(Key<T> key, T value) {
 			data.put(key, value);
 		}
-
-
 	}
 
 	DBCollection entries;
@@ -48,6 +46,20 @@ public class MongoAST implements AstDb {
 	public MongoAST() {
 		entries = DatabaseFactory.getDb().getCollection("entries");
 		graph = DatabaseFactory.getDb().getCollection("graph");
+	}
+
+
+	@Override
+	public void addChild(Identity parentId, Identity newChildId) {
+		// TODO Auto-generated method stub
+
+	}
+
+
+	@Override
+	public void deleteChild(Identity parentId, int childIndex) {
+		// TODO Auto-generated method stub
+
 	}
 
 
@@ -94,6 +106,7 @@ public class MongoAST implements AstDb {
 		currentEntry.append("from", id); //TODO globalize?
 		DBCursor dbc = entries.find(currentEntry);
 
+
 		if(dbc == null || !dbc.hasNext()) {
 			throw new NoSuchElementException();
 		}
@@ -139,7 +152,35 @@ public class MongoAST implements AstDb {
 
 
 	@Override
+	public Identity getRoot() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
 	public boolean hasData(Identity id, Key<?> key) {
 		return getData(id, key) != null;
+	}
+
+
+	@Override
+	public Identity makeNode(String name, Identity... children) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public void setChild(Identity parentId, int childIndex, Identity newChildId) {
+		// TODO Auto-generated method stub
+
+	}
+
+
+	@Override
+	public <V> void setData(Identity id, Key<V> key, V data) {
+		// TODO Auto-generated method stub
+
 	}
 }
