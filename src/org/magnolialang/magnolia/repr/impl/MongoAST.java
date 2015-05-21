@@ -34,6 +34,8 @@ public class MongoAST implements AstDb {
 
 	DBCollection entries;
 	DBCollection graph;
+	final String ENTRIES_KEY;
+	final String GRAPH_KEY;
 
 	protected static final Key<?> DATAKEY = new Key<Object>() {
 	};
@@ -43,9 +45,11 @@ public class MongoAST implements AstDb {
 	};
 
 
-	public MongoAST() {
-		entries = DatabaseFactory.getDb().getCollection("entries");
-		graph = DatabaseFactory.getDb().getCollection("graph");
+	public MongoAST(String astName) {
+		GRAPH_KEY = astName + "graph";
+		ENTRIES_KEY = astName + "entries";
+		entries = DatabaseFactory.getDb().getCollection(ENTRIES_KEY);
+		graph = DatabaseFactory.getDb().getCollection(GRAPH_KEY);
 	}
 
 
@@ -152,6 +156,20 @@ public class MongoAST implements AstDb {
 
 
 	@Override
+	public ASTCursor getParent(Identity id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public Identity getParentId(Identity id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
 	public Identity getRoot() {
 		// TODO Auto-generated method stub
 		return null;
@@ -165,7 +183,14 @@ public class MongoAST implements AstDb {
 
 
 	@Override
-	public Identity makeNode(String name, Identity... children) {
+	public Identity makeNode(String name, Identity parent) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public <V> Identity makeNode(String name, Identity parent, Key<V> key, V data) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -13,14 +13,13 @@ public class Basic {
 
 	public static void main(String[] args) {
 
-		AstDb astDB = new MongoAST();
+		AstDb astDB = new MongoAST("test");
 
-		Identity id1 = astDB.makeNode("plusA");
+		Identity id3 = astDB.makeNode("plusNode", astDB.getRoot());
+
+		Identity id1 = astDB.makeNode("plusA", id3);
 		astDB.setData(id1, intkey, 4);
 
-		Identity id2 = astDB.makeNode("plusB");
-		astDB.setData(id1, intkey, 7);
-
-		Identity id3 = astDB.makeNode("plusNode", id1, id2);
+		Identity id2 = astDB.makeNode("plusB", id3, intkey, 7);
 	}
 }

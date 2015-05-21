@@ -8,6 +8,7 @@ public interface AstDb {
 	// PS: Lett å sjekke om det er et tre, for da har alle nodene kun en forelder
 	//TODO skriv ut trær fra og med rot/en spesifikk node. BFS/DFS?
 
+
 	void addChild(Identity parentId, Identity newChildId);
 
 
@@ -35,13 +36,22 @@ public interface AstDb {
 	int getNumChildren(Identity id);
 
 
-	Identity getRoot(); //TODO how many trees do we have? Every child of root is the start of a tree
+	ASTCursor getParent(Identity id);
+
+
+	Identity getParentId(Identity id);
+
+
+	Identity getRoot();
 
 
 	boolean hasData(Identity id, Key<?> key);
 
 
-	Identity makeNode(String name, Identity... children); //TODO maybe data in constr., maybe ID instead of astcursor
+	Identity makeNode(String name, Identity parent); //TODO maybe data in constr., maybe ID instead of astcursor
+
+
+	<V> Identity makeNode(String name, Identity parent, Key<V> key, V data); //TODO maybe ID instead of astcursor
 
 
 	void setChild(Identity parentId, int childIndex, Identity newChildId);
