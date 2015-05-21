@@ -7,12 +7,12 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.magnolialang.magnolia.repr.ASTCursor;
-import org.magnolialang.magnolia.repr.AstDb;
+import org.magnolialang.magnolia.repr.Ast;
 import org.magnolialang.magnolia.repr.Identity;
 import org.magnolialang.magnolia.repr.Key;
 import org.magnolialang.magnolia.repr.Kind;
 
-public class AbstractAST implements AstDb {
+public class AbstractAST implements Ast {
 	static class Entry {
 		Map<Key<?>, Object> data = new HashMap<Key<?>, Object>();
 
@@ -38,6 +38,20 @@ public class AbstractAST implements AstDb {
 
 	protected static final Key<Kind> KINDKEY = new Key<Kind>() {
 	};
+
+
+	@Override
+	public void addChild(Identity parentId, Identity newChildId) {
+		// TODO Auto-generated method stub
+
+	}
+
+
+	@Override
+	public void deleteChild(Identity parentId, Identity childId) {
+		// TODO Auto-generated method stub
+
+	}
 
 
 	@Override
@@ -107,7 +121,56 @@ public class AbstractAST implements AstDb {
 
 
 	@Override
+	public ASTCursor getParent(Identity id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public Identity getParentId(Identity id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public Identity getRoot() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
 	public boolean hasData(Identity id, Key<?> key) {
 		return getData(id, key) != null;
+	}
+
+
+	@Override
+	public Identity makeNode(String name, Identity parent) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public <V> Identity makeNode(String name, Identity parent, Key<V> key, V data) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public void setChild(Identity parentId, int childIndex, Identity newChildId) {
+		// TODO Auto-generated method stub
+
+	}
+
+
+	@Override
+	public <V> void setData(Identity id, Key<V> key, V data) {
+		// TODO Auto-generated method stub
+
 	}
 }

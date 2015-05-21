@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.magnolialang.magnolia.repr.ASTCursor;
-import org.magnolialang.magnolia.repr.AstDb;
+import org.magnolialang.magnolia.repr.Ast;
 import org.magnolialang.magnolia.repr.Identity;
 import org.magnolialang.magnolia.repr.Key;
 import org.magnolialang.magnolia.repr.Kind;
@@ -14,8 +14,9 @@ import org.magnolialang.magnolia.repr.Kind;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 
-public class MongoAST implements AstDb {
+public class MongoAST implements Ast {
 
 
 	static class Entry {
@@ -55,15 +56,35 @@ public class MongoAST implements AstDb {
 
 	@Override
 	public void addChild(Identity parentId, Identity newChildId) {
-		// TODO Auto-generated method stub
-
+		graph.update(new BasicDBObject().append("from", parentId), new BasicDBObject().append("$push", new BasicDBObject("to", newChildId)));
 	}
 
 
+	/**
+	 * Deletes a node from some parent, removing it and all its children
+	 * recursively.
+	 */
 	@Override
-	public void deleteChild(Identity parentId, int childIndex) {
-		// TODO Auto-generated method stub
+	public void deleteChild(Identity parentId, Identity childId) {
+		graph.update(new BasicDBObject().append("from", parentId), new BasicDBObject("$pull", new BasicDBObject("to", childId)));
+		deleteNode(childId); //recursively delete children
+	}
 
+
+	protected void deleteNode(Identity nodeId) {
+		BasicDBObject nodeFinder = new BasicDBObject().append("from", nodeId);
+		DBCursor dbc = graph.find(nodeFinder);
+
+		if(dbc == null || !dbc.hasNext()) {
+			throw new NoSuchElementException("Trying to delete something already deleted");
+		}
+
+		DBObject node = dbc.next();
+		List<Identity> to = (List<Identity>) node.get("to");
+		graph.remove(node);
+		for(Identity childId : to) {
+			deleteNode(childId);
+		}
 	}
 
 

@@ -8,11 +8,11 @@ import org.magnolialang.magnolia.repr.ASTCursor.ASTHandle;
 
 public class ASTCursor extends AbstractTreeCursor<Identity, Kind, ASTHandle> {
 	static class ASTHandle {
-		public final AstDb ast;
+		public final Ast ast;
 		public final Identity id;
 
 
-		public ASTHandle(AstDb ast, Identity id) {
+		public ASTHandle(Ast ast, Identity id) {
 			super();
 			this.ast = ast;
 			this.id = id;
@@ -32,7 +32,7 @@ public class ASTCursor extends AbstractTreeCursor<Identity, Kind, ASTHandle> {
 	}
 
 
-	public ASTCursor(AstDb ast, Identity id) {
+	public ASTCursor(Ast ast, Identity id) {
 		this(new ASTHandle(ast, id));
 	}
 

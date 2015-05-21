@@ -1,7 +1,7 @@
 package org.magnolialang.magnolia.repr.examples;
 
 
-import org.magnolialang.magnolia.repr.AstDb;
+import org.magnolialang.magnolia.repr.Ast;
 import org.magnolialang.magnolia.repr.Identity;
 import org.magnolialang.magnolia.repr.Key;
 import org.magnolialang.magnolia.repr.impl.MongoAST;
@@ -13,7 +13,7 @@ public class Basic {
 
 	public static void main(String[] args) {
 
-		AstDb astDB = new MongoAST("test");
+		Ast astDB = new MongoAST("test");
 
 		Identity id3 = astDB.makeNode("plusNode", astDB.getRoot());
 

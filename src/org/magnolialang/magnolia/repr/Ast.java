@@ -1,9 +1,14 @@
 package org.magnolialang.magnolia.repr;
 
-public interface AstDb {
 
-	//TODO AstDB skal håndtere en haug av AST'er, 
-	//TODO lag eget interface for AST, refakturer inn alt som er relevant
+/**
+ * Sitter og jobber med prosjektet nå, tror jeg har fu
+ * Interface specifying the API for handling Abstract syntax trees.
+ * 
+ * 
+ * @author patmon
+ */
+public interface Ast {
 	//TODO problemer som skjer om man lager sykler, DAG, osv. 
 	// PS: Lett å sjekke om det er et tre, for da har alle nodene kun en forelder
 	//TODO skriv ut trær fra og med rot/en spesifikk node. BFS/DFS?
@@ -12,7 +17,7 @@ public interface AstDb {
 	void addChild(Identity parentId, Identity newChildId);
 
 
-	void deleteChild(Identity parentId, int childIndex);
+	void deleteChild(Identity parentId, Identity childId);
 
 
 	ASTCursor getChild(Identity id, int i);
