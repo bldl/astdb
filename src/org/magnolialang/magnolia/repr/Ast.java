@@ -14,10 +14,10 @@ public interface Ast {
 	//TODO skriv ut trær fra og med rot/en spesifikk node. BFS/DFS?
 
 
-	void addChild(Identity parentId, Identity newChildId);
+	//void addChild(Identity parentId, Identity newChildId);
 
 
-	void deleteChild(Identity parentId, Identity childId);
+	void deleteNode(Identity childId);
 
 
 	ASTCursor getChild(Identity id, int i);

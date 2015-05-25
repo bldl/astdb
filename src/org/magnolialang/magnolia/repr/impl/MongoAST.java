@@ -1,7 +1,6 @@
 package org.magnolialang.magnolia.repr.impl;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -33,9 +32,16 @@ public class MongoAST implements Ast {
 		}
 	}
 
-	DBCollection entries;
+	/**
+	 * Every node in the graph is on the form
+	 * 
+	 * node : {
+	 * .. identity : <Identity>,
+	 * .. parent : <Identity>, //identity of its parent
+	 * .. entry : <Entry> // the data contained in the node
+	 * }
+	 */
 	DBCollection graph;
-	final String ENTRIES_KEY;
 	final String GRAPH_KEY;
 
 	protected static final Key<?> DATAKEY = new Key<Object>() {
@@ -48,43 +54,56 @@ public class MongoAST implements Ast {
 
 	public MongoAST(String astName) {
 		GRAPH_KEY = astName + "graph";
-		ENTRIES_KEY = astName + "entries";
-		entries = DatabaseFactory.getDb().getCollection(ENTRIES_KEY);
 		graph = DatabaseFactory.getDb().getCollection(GRAPH_KEY);
 	}
 
 
-	@Override
-	public void addChild(Identity parentId, Identity newChildId) {
-		graph.update(new BasicDBObject().append("from", parentId), new BasicDBObject().append("$push", new BasicDBObject("to", newChildId)));
+//	@Override
+//	public void addChild(Identity parentId, Identity newChildId) {
+//		graph.update(new BasicDBObject().append("from", parentId), new BasicDBObject().append("$push", new BasicDBObject("to", newChildId)));
+//	}
+
+
+//	/**
+//	 * Deletes a node from some parent, removing it and all its children
+//	 * recursively.
+//	 */
+//	@Override
+//	public void deleteChild(Identity parentId, Identity childId) {
+//		graph.update(new BasicDBObject().append("from", parentId), new BasicDBObject("$pull", new BasicDBObject("to", childId)));
+//		deleteNode(childId); //recursively delete children
+//	}
+
+	protected void deleteNode(DBObject dbobject) {
+		Identity nodeId = (Identity) dbobject.get("identity");
+
+		//find all children
+		BasicDBObject childnodes = new BasicDBObject().append("parent", nodeId);
+		DBCursor dbc = graph.find(childnodes);
+		while(dbc.hasNext()) {
+			deleteNode(dbc.next()); // and then proceed to delete them
+		}
+
+		graph.remove(dbobject); // before removing our node
 	}
 
 
-	/**
-	 * Deletes a node from some parent, removing it and all its children
-	 * recursively.
-	 */
 	@Override
-	public void deleteChild(Identity parentId, Identity childId) {
-		graph.update(new BasicDBObject().append("from", parentId), new BasicDBObject("$pull", new BasicDBObject("to", childId)));
-		deleteNode(childId); //recursively delete children
-	}
-
-
-	protected void deleteNode(Identity nodeId) {
-		BasicDBObject nodeFinder = new BasicDBObject().append("from", nodeId);
-		DBCursor dbc = graph.find(nodeFinder);
+	public void deleteNode(Identity nodeId) {
+		BasicDBObject thisNode = new BasicDBObject().append("identity", nodeId);
+		DBCursor dbc = graph.find(thisNode);
 
 		if(dbc == null || !dbc.hasNext()) {
 			throw new NoSuchElementException("Trying to delete something already deleted");
 		}
 
 		DBObject node = dbc.next();
-		List<Identity> to = (List<Identity>) node.get("to");
-		graph.remove(node);
-		for(Identity childId : to) {
-			deleteNode(childId);
+
+		if(dbc.hasNext()) {
+			throw new RuntimeException("Several nodes had the same identity!");
 		}
+
+		deleteNode(node);
 	}
 
 
@@ -98,24 +117,29 @@ public class MongoAST implements Ast {
 	@Override
 	public Identity getChildId(Identity id, int i) {
 		if(i < 0) {
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("children are numbered from 0..n-1, so child number <" + i + "> is illegal");
 		}
 
-		BasicDBObject currentNode = new BasicDBObject();
-		currentNode.append("from", id);	//TODO globalize?
-		DBCursor dbc = graph.find(currentNode);
+		BasicDBObject childnode = new BasicDBObject();
+		childnode.append("parent", id);
+		DBCursor dbc = graph.find(childnode);
 
 		if(dbc == null || !dbc.hasNext()) {
 			throw new NoSuchElementException();
 		}
 
-		List<Identity> to = (List<Identity>) dbc.next().get("to"); //TODO globalize?
-
-		if(i >= to.size()) {
-			throw new IndexOutOfBoundsException();
+		if(dbc.count() <= i) {
+			throw new IndexOutOfBoundsException("children are numbered from 0..n-1, so child number <" + i + "> is illegal");
 		}
 
-		return to.get(i);
+		int n = 0;
+		for(DBObject obj : dbc) {
+			if(n == i) {
+				return (Identity) obj.get("identity");
+			}
+			n++;
+		}
+		throw new IndexOutOfBoundsException("something is wrong in getChildId(Identity id, int i)"); //should never happen, I have it as a precaution
 	}
 
 
@@ -126,17 +150,20 @@ public class MongoAST implements Ast {
 
 
 	protected Entry getEntry(Identity id) {
-
-		BasicDBObject currentEntry = new BasicDBObject();
-		currentEntry.append("from", id); //TODO globalize?
-		DBCursor dbc = entries.find(currentEntry);
+		BasicDBObject node = new BasicDBObject();
+		node.append("identity", id); //TODO globalize?
+		DBCursor dbc = graph.find(node);
 
 
 		if(dbc == null || !dbc.hasNext()) {
 			throw new NoSuchElementException();
 		}
 
-		Entry entry = (Entry) dbc.next().get("entry"); //TODO globalize?
+		if(dbc.count() > 1) {
+			throw new RuntimeException("2 elements matched to same id!");
+		}
+
+		Entry entry = (Entry) dbc.next().get("entry");
 
 		return entry;
 	}
@@ -162,37 +189,48 @@ public class MongoAST implements Ast {
 
 	@Override
 	public int getNumChildren(Identity id) {
-		BasicDBObject currentNode = new BasicDBObject();
-		currentNode.append("from", id);	//TODO globalize?
-		DBCursor dbc = graph.find(currentNode);
+		BasicDBObject nodeWithParent = new BasicDBObject();
+		nodeWithParent.append("parent", id);
+		DBCursor dbc = graph.find(nodeWithParent);
 
-		if(dbc == null || !dbc.hasNext()) {
-			throw new NoSuchElementException();
+		if(dbc == null) {
+			throw new NoSuchElementException("can't happen - check getNumChildren(Identity id) method");
 		}
 
-		List<Identity> children = (List<Identity>) dbc.next().get("to"); //TODO globalize?
-
-		return children.size();
+		return dbc.count();
 	}
 
 
 	@Override
 	public ASTCursor getParent(Identity id) {
-		// TODO Auto-generated method stub
-		return null;
+		return getNode(getParentId(id));
 	}
 
 
 	@Override
 	public Identity getParentId(Identity id) {
-		// TODO Auto-generated method stub
-		return null;
+		BasicDBObject node = new BasicDBObject();
+		node.append("identity", id);
+		DBCursor dbc = graph.find(node);
+
+		if(dbc == null) {
+			throw new NoSuchElementException("can't happen - check getParent(Identity id) method");
+		}
+		if(dbc.count() == 0) {
+			throw new NoSuchElementException("no match on identity " + id);
+		}
+		if(dbc.count() > 1) {
+			throw new RuntimeException("several matches on identity " + id);
+		}
+
+		Identity parentId = (Identity) dbc.next().get("parent");
+		return parentId;
 	}
 
 
 	@Override
 	public Identity getRoot() {
-		// TODO Auto-generated method stub
+		// TODO decide how to represent root - by unique identity or by setting its parent to "null"? 
 		return null;
 	}
 

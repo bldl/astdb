@@ -40,11 +40,11 @@ public class AbstractAST implements Ast {
 	};
 
 
-	@Override
-	public void addChild(Identity parentId, Identity newChildId) {
-		// TODO Auto-generated method stub
-
-	}
+//	@Override
+//	public void addChild(Identity parentId, Identity newChildId) {
+//		// TODO Auto-generated method stub
+//
+//	}
 
 
 	@Override
