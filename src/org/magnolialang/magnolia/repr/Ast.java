@@ -56,11 +56,5 @@ public interface Ast {
 	Identity makeNode(String name, Identity parent); //TODO maybe data in constr., maybe ID instead of astcursor
 
 
-	<V> Identity makeNode(String name, Identity parent, Key<V> key, V data); //TODO maybe ID instead of astcursor
-
-
-	void setChild(Identity parentId, int childIndex, Identity newChildId);
-
-
 	<V> void setData(Identity id, Key<V> key, V data);
 }

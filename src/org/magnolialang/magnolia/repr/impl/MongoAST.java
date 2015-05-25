@@ -37,6 +37,7 @@ public class MongoAST implements Ast {
 	 * 
 	 * node : {
 	 * .. identity : <Identity>,
+	 * .. name : <String>, // name of the node
 	 * .. parent : <Identity>, //identity of its parent
 	 * .. entry : <Entry> // the data contained in the node
 	 * }
@@ -57,22 +58,6 @@ public class MongoAST implements Ast {
 		graph = DatabaseFactory.getDb().getCollection(GRAPH_KEY);
 	}
 
-
-//	@Override
-//	public void addChild(Identity parentId, Identity newChildId) {
-//		graph.update(new BasicDBObject().append("from", parentId), new BasicDBObject().append("$push", new BasicDBObject("to", newChildId)));
-//	}
-
-
-//	/**
-//	 * Deletes a node from some parent, removing it and all its children
-//	 * recursively.
-//	 */
-//	@Override
-//	public void deleteChild(Identity parentId, Identity childId) {
-//		graph.update(new BasicDBObject().append("from", parentId), new BasicDBObject("$pull", new BasicDBObject("to", childId)));
-//		deleteNode(childId); //recursively delete children
-//	}
 
 	protected void deleteNode(DBObject dbobject) {
 		Identity nodeId = (Identity) dbobject.get("identity");
@@ -243,28 +228,40 @@ public class MongoAST implements Ast {
 
 	@Override
 	public Identity makeNode(String name, Identity parent) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+		BasicDBObject node = new BasicDBObject();
+		node.append("name", name);
+		node.append("parent", parent);
+		node.append("entry", null);
+
+		Identity id = null; //TODO generate id
+		node.append("identity", id);
 
 
-	@Override
-	public <V> Identity makeNode(String name, Identity parent, Key<V> key, V data) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+		graph.insert(node);
 
-
-	@Override
-	public void setChild(Identity parentId, int childIndex, Identity newChildId) {
-		// TODO Auto-generated method stub
-
+		return id;
 	}
 
 
 	@Override
 	public <V> void setData(Identity id, Key<V> key, V data) {
-		// TODO Auto-generated method stub
+		BasicDBObject thisNode = new BasicDBObject().append("identity", id);
+		DBCursor dbc = graph.find(thisNode);
 
+		if(dbc == null || !dbc.hasNext()) {
+			throw new NoSuchElementException();
+		}
+
+		if(dbc.count() > 1) {
+			throw new RuntimeException("2 elements matched to same id!");
+		}
+
+		DBObject graphnode = dbc.next();
+
+		Entry entry = (Entry) graphnode.get("entry");
+		entry.put(key, data);
+
+		graph.update(graphnode, new BasicDBObject().append("entry", entry));	//TODO test behaves as expected
 	}
+
 }
