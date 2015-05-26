@@ -15,11 +15,12 @@ public class Basic {
 
 		Ast astDB = new MongoAST("test");
 
-		Identity id3 = astDB.makeNode("plusNode", astDB.getRoot());
+		Identity id3 = astDB.makeNode("plusNode", null); //it becomes the root
 
 		Identity id1 = astDB.makeNode("plusA", id3);
 		astDB.setData(id1, intkey, 4);
 
-		Identity id2 = astDB.makeNode("plusB", id3, intkey, 7);
+		Identity id2 = astDB.makeNode("plusB", id3);
+		astDB.setData(id2, intkey, 7);
 	}
 }

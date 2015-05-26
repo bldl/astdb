@@ -1,5 +1,7 @@
 package org.magnolialang.magnolia.repr;
 
+import java.util.List;
+
 
 /**
  * Sitter og jobber med prosjektet nå, tror jeg har fu
@@ -47,7 +49,7 @@ public interface Ast {
 	Identity getParentId(Identity id);
 
 
-	Identity getRoot();
+	List<Identity> getRoots();
 
 
 	boolean hasData(Identity id, Key<?> key);

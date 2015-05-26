@@ -1,6 +1,8 @@
 package org.magnolialang.magnolia.repr.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -214,9 +216,16 @@ public class MongoAST implements Ast {
 
 
 	@Override
-	public Identity getRoot() {
-		// TODO decide how to represent root - by unique identity or by setting its parent to "null"? 
-		return null;
+	public List<Identity> getRoots() {
+		BasicDBObject nodeWithParent = new BasicDBObject();
+		nodeWithParent.append("parent", null);
+		DBCursor dbc = graph.find(nodeWithParent);
+
+		List<Identity> roots = new ArrayList<Identity>(dbc.count());
+		for(DBObject db : dbc) {
+			roots.add((Identity) db.get("identity"));
+		}
+		return roots;
 	}
 
 
@@ -233,9 +242,8 @@ public class MongoAST implements Ast {
 		node.append("parent", parent);
 		node.append("entry", null);
 
-		Identity id = null; //TODO generate id
+		Identity id = null; 		//TODO generate id
 		node.append("identity", id);
-
 
 		graph.insert(node);
 
