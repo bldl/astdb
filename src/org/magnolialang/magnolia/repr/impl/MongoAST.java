@@ -61,6 +61,21 @@ public class MongoAST implements Ast {
 	}
 
 
+	protected BasicDBObject createNode(String name, Identity parent) {
+		BasicDBObject node = new BasicDBObject();
+		node.append("name", name);
+		node.append("parent", parent);
+		node.append("entry", null);
+
+		Identity id = (name == null || name == "") ? new AnonIdentity() : new NamedIdentity(name); 		//TODO generate id in a better way?
+		node.append("identity", id);
+
+		graph.insert(node);
+
+		return node;
+	}
+
+
 	protected void deleteNode(DBObject dbobject) {
 		Identity nodeId = (Identity) dbobject.get("identity");
 
@@ -77,20 +92,7 @@ public class MongoAST implements Ast {
 
 	@Override
 	public void deleteNode(Identity nodeId) {
-		BasicDBObject thisNode = new BasicDBObject().append("identity", nodeId);
-		DBCursor dbc = graph.find(thisNode);
-
-		if(dbc == null || !dbc.hasNext()) {
-			throw new NoSuchElementException("Trying to delete something already deleted");
-		}
-
-		DBObject node = dbc.next();
-
-		if(dbc.hasNext()) {
-			throw new RuntimeException("Several nodes had the same identity!");
-		}
-
-		deleteNode(node);
+		deleteNode(getDBNode(nodeId));
 	}
 
 
@@ -136,7 +138,7 @@ public class MongoAST implements Ast {
 	}
 
 
-	protected Entry getEntry(Identity id) {
+	protected DBObject getDBNode(Identity id) {
 		BasicDBObject node = new BasicDBObject();
 		node.append("identity", id); //TODO globalize?
 		DBCursor dbc = graph.find(node);
@@ -150,9 +152,12 @@ public class MongoAST implements Ast {
 			throw new RuntimeException("2 elements matched to same id!");
 		}
 
-		Entry entry = (Entry) dbc.next().get("entry");
+		return dbc.next();
+	}
 
-		return entry;
+
+	protected Entry getEntry(Identity id) {
+		return (Entry) getDBNode(id).get("entry");
 	}
 
 
@@ -196,22 +201,7 @@ public class MongoAST implements Ast {
 
 	@Override
 	public Identity getParentId(Identity id) {
-		BasicDBObject node = new BasicDBObject();
-		node.append("identity", id);
-		DBCursor dbc = graph.find(node);
-
-		if(dbc == null) {
-			throw new NoSuchElementException("can't happen - check getParent(Identity id) method");
-		}
-		if(dbc.count() == 0) {
-			throw new NoSuchElementException("no match on identity " + id);
-		}
-		if(dbc.count() > 1) {
-			throw new RuntimeException("several matches on identity " + id);
-		}
-
-		Identity parentId = (Identity) dbc.next().get("parent");
-		return parentId;
+		return (Identity) getDBNode(id).get("parent");
 	}
 
 
@@ -237,39 +227,30 @@ public class MongoAST implements Ast {
 
 	@Override
 	public Identity makeNode(String name, Identity parent) {
-		BasicDBObject node = new BasicDBObject();
-		node.append("name", name);
-		node.append("parent", parent);
-		node.append("entry", null);
+		return (Identity) createNode(name, parent).get("identity");
+	}
 
-		Identity id = null; 		//TODO generate id
-		node.append("identity", id);
 
-		graph.insert(node);
+	@Override
+	public <V> Identity makeNode(String name, Identity parent, Key<V> key, V data) {
+		BasicDBObject node = createNode(name, parent);
+		setData(node, key, data);
 
-		return id;
+		Identity nodeID = (Identity) node.get("identity");
+		return nodeID;
+	}
+
+
+	protected <V> void setData(DBObject node, Key<V> key, V data) {
+		Entry entry = (Entry) node.get("entry");
+		entry.put(key, data);
+		graph.update(node, new BasicDBObject().append("entry", entry));	//TODO test behaves as expected
 	}
 
 
 	@Override
 	public <V> void setData(Identity id, Key<V> key, V data) {
-		BasicDBObject thisNode = new BasicDBObject().append("identity", id);
-		DBCursor dbc = graph.find(thisNode);
-
-		if(dbc == null || !dbc.hasNext()) {
-			throw new NoSuchElementException();
-		}
-
-		if(dbc.count() > 1) {
-			throw new RuntimeException("2 elements matched to same id!");
-		}
-
-		DBObject graphnode = dbc.next();
-
-		Entry entry = (Entry) graphnode.get("entry");
-		entry.put(key, data);
-
-		graph.update(graphnode, new BasicDBObject().append("entry", entry));	//TODO test behaves as expected
+		setData(getDBNode(id), key, data);
 	}
 
 }
