@@ -58,8 +58,8 @@ public interface Ast {
 	Identity makeNode(String name, Identity parent);
 
 
-	Identity makeNode(String name, Identity parent, Entry data);
+	Identity makeNode(String name, Identity parent, EntryMap data);
 
 
-	void setData(Identity id, Entry data);
+	void setData(Identity id, EntryMap data);
 }

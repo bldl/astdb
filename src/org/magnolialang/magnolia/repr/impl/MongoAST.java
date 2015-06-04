@@ -6,7 +6,7 @@ import java.util.NoSuchElementException;
 
 import org.magnolialang.magnolia.repr.ASTCursor;
 import org.magnolialang.magnolia.repr.Ast;
-import org.magnolialang.magnolia.repr.Entry;
+import org.magnolialang.magnolia.repr.EntryMap;
 import org.magnolialang.magnolia.repr.Identity;
 import org.magnolialang.magnolia.repr.Key;
 import org.magnolialang.magnolia.repr.Kind;
@@ -15,6 +15,19 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+
+
+/**
+ * TODO
+ * - ferdiggjør EntryMap/Entry refaktorering og lag en collection for Entry = {
+ * nodeId, key, data }
+ * 
+ * 
+ * - sjekk om effektivt, < dump et tre inn og sjekk
+ * --- er dette mer effektivt enn vanlig måter å lagre trær på eller ikke?
+ * --- eksperimenter med alternativer?
+ * 
+ */
 
 public class MongoAST implements Ast {
 
@@ -140,8 +153,8 @@ public class MongoAST implements Ast {
 	}
 
 
-	protected Entry getEntry(Identity id) {
-		return (Entry) getDBNode(id).get("entry");
+	protected EntryMap getEntry(Identity id) {
+		return (EntryMap) getDBNode(id).get("entry");
 	}
 
 
@@ -216,20 +229,20 @@ public class MongoAST implements Ast {
 
 
 	@Override
-	public Identity makeNode(String name, Identity parent, Entry data) {
+	public Identity makeNode(String name, Identity parent, EntryMap data) {
 		BasicDBObject node = createNode(name, parent);
 		setData(node, data);
 		return (Identity) node.get("identity");
 	}
 
 
-	protected <V> void setData(DBObject node, Entry data) {
+	protected <V> void setData(DBObject node, EntryMap data) {
 		graph.update(node, new BasicDBObject().append("entry", data));	//TODO test behaves as expected
 	}
 
 
 	@Override
-	public void setData(Identity id, Entry data) {
+	public void setData(Identity id, EntryMap data) {
 		setData(getDBNode(id), data);
 	}
 

@@ -3,16 +3,16 @@ package org.magnolialang.magnolia.repr;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Entry {
+public class EntryMap {
 	private Map<Key<?>, Object> data;
 
 
-	public Entry() {
+	public EntryMap() {
 		data = new HashMap<Key<?>, Object>();
 	}
 
 
-	public Entry(Map<Key<?>, Object> data) {
+	public EntryMap(Map<Key<?>, Object> data) {
 		this.data = data;
 	}
 
@@ -32,7 +32,7 @@ public class Entry {
 	}
 
 
-	public <T> Entry put(Key<T> key, T value) {
+	public <T> EntryMap put(Key<T> key, T value) {
 		data.put(key, value);
 		return this;
 	}
