@@ -1,13 +1,12 @@
 package org.magnolialang.magnolia.repr.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.magnolialang.magnolia.repr.ASTCursor;
 import org.magnolialang.magnolia.repr.Ast;
+import org.magnolialang.magnolia.repr.Entry;
 import org.magnolialang.magnolia.repr.Identity;
 import org.magnolialang.magnolia.repr.Key;
 import org.magnolialang.magnolia.repr.Kind;
@@ -18,21 +17,6 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
 public class MongoAST implements Ast {
-
-
-	static class Entry {
-		Map<Key<?>, Object> data = new HashMap<Key<?>, Object>();
-
-
-		<T> T get(Key<T> key) {
-			return (T) data.get(key);
-		}
-
-
-		<T> void put(Key<T> key, T value) {
-			data.put(key, value);
-		}
-	}
 
 	/**
 	 * Every node in the graph is on the form
@@ -232,25 +216,21 @@ public class MongoAST implements Ast {
 
 
 	@Override
-	public <V> Identity makeNode(String name, Identity parent, Key<V> key, V data) {
+	public Identity makeNode(String name, Identity parent, Entry data) {
 		BasicDBObject node = createNode(name, parent);
-		setData(node, key, data);
-
-		Identity nodeID = (Identity) node.get("identity");
-		return nodeID;
+		setData(node, data);
+		return (Identity) node.get("identity");
 	}
 
 
-	protected <V> void setData(DBObject node, Key<V> key, V data) {
-		Entry entry = (Entry) node.get("entry");
-		entry.put(key, data);
-		graph.update(node, new BasicDBObject().append("entry", entry));	//TODO test behaves as expected
+	protected <V> void setData(DBObject node, Entry data) {
+		graph.update(node, new BasicDBObject().append("entry", data));	//TODO test behaves as expected
 	}
 
 
 	@Override
-	public <V> void setData(Identity id, Key<V> key, V data) {
-		setData(getDBNode(id), key, data);
+	public void setData(Identity id, Entry data) {
+		setData(getDBNode(id), data);
 	}
 
 }

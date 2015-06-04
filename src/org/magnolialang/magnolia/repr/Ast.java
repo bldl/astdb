@@ -55,11 +55,11 @@ public interface Ast {
 	boolean hasData(Identity id, Key<?> key);
 
 
-	Identity makeNode(String name, Identity parent); //TODO maybe data in constr., maybe ID instead of astcursor
+	Identity makeNode(String name, Identity parent);
 
 
-	<V> Identity makeNode(String name, Identity parent, Key<V> key, V data);
+	Identity makeNode(String name, Identity parent, Entry data);
 
 
-	<V> void setData(Identity id, Key<V> key, V data);
+	void setData(Identity id, Entry data);
 }
