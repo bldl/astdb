@@ -32,7 +32,8 @@ public class Entry {
 	}
 
 
-	public <T> void put(Key<T> key, T value) {
+	public <T> Entry put(Key<T> key, T value) {
 		data.put(key, value);
+		return this;
 	}
 }
