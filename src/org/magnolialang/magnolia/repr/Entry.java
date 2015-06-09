@@ -6,7 +6,7 @@ package org.magnolialang.magnolia.repr;
  * entry : {
  * .. identity : <Identity>, //the identity of the node to which it belongs
  * .. key : <Key<?>>,
- * .. data : <?>
+ * .. value : <?>
  **/
 
 public class Entry<T> {

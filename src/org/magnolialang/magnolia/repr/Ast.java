@@ -88,9 +88,12 @@ public interface Ast {
 	 * 
 	 * @param id
 	 *            the Identity to which the entry belongs
+	 * @param key
+	 *            the Key<V> holding the type <V> of the Value contained in the
+	 *            entry
 	 * @return Entry<V> an entry with data of type V
 	 */
-	<V> Entry<V> getEntry(Identity id);
+	<V> Entry<V> getEntry(Identity id, Key<V> key);
 
 
 	/**
@@ -153,7 +156,7 @@ public interface Ast {
 
 
 	/**
-	 * Stores a node in the AST with its corresponding entries in the AST
+	 * Stores a node in the AST. Does NOT store its entries!
 	 * 
 	 * @param node
 	 *            the Node to be stored

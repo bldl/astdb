@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import oldcode.EntryMap;
-
 import org.magnolialang.magnolia.repr.ASTCursor;
 import org.magnolialang.magnolia.repr.Ast;
 import org.magnolialang.magnolia.repr.Entry;
@@ -53,7 +51,42 @@ public class MongoAST implements Ast {
 	}
 
 
-	protected void deleteNode(DBObject dbobject) {
+	@SuppressWarnings("unchecked")
+	private <V> Entry<V> dbEntryToEntry(DBObject dbEntry) {
+		return new Entry<V>((Key<V>) dbEntry.get("key"), (V) dbEntry.get("value"));
+	}
+
+
+	private Node dbNodeToNode(DBObject dbNode) {
+		return new Node((String) dbNode.get("name"), (Identity) dbNode.get("identity"));
+	}
+
+
+	/**
+	 * Deletes all entries corresponding to a Node with Identity "id"
+	 * 
+	 * @param id
+	 *            the Identity to which the Entries belong
+	 */
+	private void deleteEntries(Identity id) {
+		BasicDBObject dbEntry = new BasicDBObject().append("identity", id);
+		DBCursor dbc = entries.find(dbEntry);
+
+		while(dbc.hasNext()) {
+			entries.remove(dbc.next());
+		}
+	}
+
+
+	/**
+	 * Deletes the Node "dbobject" from the nodes collection, and all its
+	 * child-nodes and entries.
+	 * 
+	 * @param dbobject
+	 *            the DBObject which we're deleting, together with all its
+	 *            sub-entries and sub-nodes
+	 */
+	private void deleteNode(DBObject dbobject) {
 		Identity nodeId = (Identity) dbobject.get("identity");
 
 		//find all children
@@ -63,6 +96,7 @@ public class MongoAST implements Ast {
 			deleteNode(dbc.next()); // and then proceed to delete them
 		}
 
+		deleteEntries(nodeId); // delete entries corresponding to our node
 		nodes.remove(dbobject); // before removing our node
 	}
 
@@ -73,7 +107,7 @@ public class MongoAST implements Ast {
 	}
 
 
-	private BasicDBObject entryToDbEntry(Entry entry) {
+	private <V> BasicDBObject entryToDbEntry(Entry<V> entry) {
 		BasicDBObject dbNode = new BasicDBObject();
 		dbNode.append("identity", entry.getNodeId());
 		dbNode.append("value", entry.getValue());
@@ -102,11 +136,23 @@ public class MongoAST implements Ast {
 	}
 
 
+//	@Override
+//	public <V> V getData(Identity id, Key<V> key) {
+//		return getEntry(id).get(key);
+//	}
+
+
 	@Override
 	public ASTCursor getChild(Identity id, int i) {
 		Identity childId = getChildId(id, i);
 		return getAstCursor(childId);
 	}
+
+
+//	@Override
+//	protected EntryMap getEntry(Identity id) {
+//		return (EntryMap) getDBNode(id).get("entry");
+//	}
 
 
 	@Override
@@ -138,9 +184,22 @@ public class MongoAST implements Ast {
 	}
 
 
-	@Override
-	public <V> V getData(Identity id, Key<V> key) {
-		return getEntry(id).get(key);
+	private <V> DBObject getDBEntry(Identity id, Key<V> key) {
+		BasicDBObject dbEntry = new BasicDBObject();
+		dbEntry.append("identity", id); //TODO globalize?
+		dbEntry.append("key", key);
+		DBCursor dbc = entries.find(dbEntry);
+
+
+		if(dbc == null || !dbc.hasNext()) {
+			throw new NoSuchElementException();
+		}
+
+		if(dbc.count() > 1) {
+			throw new RuntimeException("2 elements matched to same id!");
+		}
+
+		return dbc.next();
 	}
 
 
@@ -163,41 +222,22 @@ public class MongoAST implements Ast {
 
 
 	@Override
-	protected EntryMap getEntry(Identity id) {
-		return (EntryMap) getDBNode(id).get("entry");
-	}
-
-
-	@Override
-	public <V> Entry<V> getEntry(Identity id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
-	public <V> Entry<V> getEntry(Identity id) {
-		// TODO Auto-generated method stub
-		return null;
+	public <V> Entry<V> getEntry(Identity id, Key<V> key) {
+		return dbEntryToEntry(getDBEntry(id, key));
 	}
 
 
 	@Override
 	public Kind getKind(Identity id) {
-		return getEntry(id).get(KINDKEY);
-	}
-
-
-	@Override
-	public String getName(Identity id) {
-		return getEntry(id).get(NAMEKEY);
+		//return getEntry(id).get(KINDKEY);
+		// TODO fix this;
+		return null;
 	}
 
 
 	@Override
 	public Node getNode(Identity id) {
-		// TODO Auto-generated method stub
-		return null;
+		return dbNodeToNode(getDBNode(id));
 	}
 
 
@@ -212,12 +252,6 @@ public class MongoAST implements Ast {
 		}
 
 		return dbc.count();
-	}
-
-
-	@Override
-	public ASTCursor getParentAstCursor(Identity id) {
-		return getAstCursor(getParentId(id));
 	}
 
 
@@ -241,24 +275,19 @@ public class MongoAST implements Ast {
 	}
 
 
-	@Override
-	public boolean hasData(Identity id, Key<?> key) {
-		return getData(id, key) != null;
-	}
+//
+//	@Override
+//	public Identity makeNode(String name, Identity parent) {
+//		return (Identity) createNode(name, parent).get("identity");
+//	}
 
-
-	@Override
-	public Identity makeNode(String name, Identity parent) {
-		return (Identity) createNode(name, parent).get("identity");
-	}
-
-
-	@Override
-	public Identity makeNode(String name, Identity parent, EntryMap data) {
-		BasicDBObject node = createNode(name, parent);
-		setData(node, data);
-		return (Identity) node.get("identity");
-	}
+//
+//	@Override
+//	public Identity makeNode(String name, Identity parent, EntryMap data) {
+//		BasicDBObject node = createNode(name, parent);
+//		setData(node, data);
+//		return (Identity) node.get("identity");
+//	}
 
 
 	private BasicDBObject nodeToDbNode(Node node) {
@@ -270,23 +299,21 @@ public class MongoAST implements Ast {
 	}
 
 
-	protected <V> void setData(DBObject node, EntryMap data) {
-		nodes.update(node, new BasicDBObject().append("entry", data));	//TODO test behaves as expected
-	}
+//	protected <V> void setData(DBObject node, EntryMap data) {
+//		nodes.update(node, new BasicDBObject().append("entry", data));	//TODO test behaves as expected
+//	}
 
 
 	@Override
-	public <T> Identity storeEntry(Entry<T> entry) {
+	public <T> void storeEntry(Entry<T> entry) {
 		entries.insert(entryToDbEntry(entry)); //TODO duplicate check etc.
-		return entry.getNodeId();
 	}
 
 
 	@Override
-	public Identity storeNode(Node node) {
+	public void storeNode(Node node) {
 		BasicDBObject dbNode = nodeToDbNode(node); //TODO duplicate check etc.
 		nodes.insert(dbNode);
-		return node.getIDENTITY();
 	}
 
 
