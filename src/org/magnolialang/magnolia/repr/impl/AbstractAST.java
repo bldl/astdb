@@ -57,7 +57,7 @@ public class AbstractAST implements Ast {
 	@Override
 	public ASTCursor getChild(Identity id, int i) {
 		Identity childId = getChildId(id, i);
-		return getNode(childId);
+		return getAstCursor(childId);
 	}
 
 
@@ -105,7 +105,7 @@ public class AbstractAST implements Ast {
 
 
 	@Override
-	public ASTCursor getNode(Identity id) {
+	public ASTCursor getAstCursor(Identity id) {
 		return new ASTCursor(this, id);
 	}
 
@@ -121,7 +121,7 @@ public class AbstractAST implements Ast {
 
 
 	@Override
-	public ASTCursor getParent(Identity id) {
+	public ASTCursor getParentAstCursor(Identity id) {
 		// TODO Auto-generated method stub
 		return null;
 	}

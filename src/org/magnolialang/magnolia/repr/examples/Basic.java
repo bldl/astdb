@@ -2,9 +2,9 @@ package org.magnolialang.magnolia.repr.examples;
 
 
 import org.magnolialang.magnolia.repr.Ast;
-import org.magnolialang.magnolia.repr.EntryMap;
-import org.magnolialang.magnolia.repr.Identity;
+import org.magnolialang.magnolia.repr.Entry;
 import org.magnolialang.magnolia.repr.Key;
+import org.magnolialang.magnolia.repr.Node;
 import org.magnolialang.magnolia.repr.impl.MongoAST;
 
 public class Basic {
@@ -16,11 +16,11 @@ public class Basic {
 
 		Ast astDB = new MongoAST("test");
 
-		Identity id3 = astDB.makeNode("plusNode", null); //it becomes the root
+		Node plusNode = 
+				new Node("plusNode", 
+						new Node("plusA").addEntry(new Entry<Integer>(intkey, 4)),
+						new Node("plusB").addEntry(new Entry<Integer>(intkey, 7)));
 
-		Identity id1 = astDB.makeNode("plusA", id3);
-		astDB.setData(id1, new EntryMap().put(intkey, 4));
-
-		Identity id2 = astDB.makeNode("plusB", id3, new EntryMap().put(intkey, 4));
+		astDB.storeSubtree(plusNode);
 	}
 }

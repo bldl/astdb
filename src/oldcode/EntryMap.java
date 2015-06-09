@@ -1,10 +1,8 @@
-package org.magnolialang.magnolia.repr;
+package oldcode;
 
-import java.util.HashMap;
-import java.util.Map;
 
 public class EntryMap {
-	private Map<Key<?>, Object> data;
+	/*private Map<Key<?>, Object> data;
 
 
 	public EntryMap() {
@@ -12,9 +10,20 @@ public class EntryMap {
 	}
 
 
+	public EntryMap(Entry<?>... entries) {
+		data = new HashMap<Key<?>, Object>();
+
+		for(Entry<?> entry : entries) {
+			put(entry);
+		}
+	}
+
+
 	public EntryMap(Map<Key<?>, Object> data) {
 		this.data = data;
 	}
+	
+	pu
 
 
 	public <T> T get(Key<T> key) {
@@ -32,8 +41,13 @@ public class EntryMap {
 	}
 
 
+	public <T> EntryMap put(Entry entry) {
+		return put(entry.getKey(), entry.getValue());
+	}
+
+
 	public <T> EntryMap put(Key<T> key, T value) {
 		data.put(key, value);
 		return this;
-	}
+	}*/
 }

@@ -16,11 +16,12 @@ public class DatabaseFactory {
 	private static MongoClient mongoClient;
 
 
-//	private static void close() {
-//		mongoClient.close();
-//		mongoClient = null;
-//		db = null;
-//	}
+	@SuppressWarnings("unused")
+	private static void close() {
+		mongoClient.close();
+		mongoClient = null;
+		db = null;
+	}
 
 
 	public static DB getDb() {
