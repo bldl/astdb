@@ -4,7 +4,6 @@ import java.util.List;
 
 
 /**
- * Sitter og jobber med prosjektet nå, tror jeg har fu
  * Interface specifying the API for handling Abstract syntax trees.
  * 
  * 
@@ -128,7 +127,7 @@ public interface Ast {
 
 
 	/**
-	 * Gets the Identity of some node with Identity "id"
+	 * Gets the Identity of the parent of the node with Identity "id"
 	 * 
 	 * @param id
 	 *            the Identity of the node which we're looking for a parent of

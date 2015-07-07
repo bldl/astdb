@@ -22,7 +22,43 @@ public class Node {
 	final String name;
 	Identity parent;
 	List<Node> children;
-	List<Entry<?>> entries;
+	EntryMap entrymap;
+
+
+	public Node(String name, EntryMap entries, Node... childNodes) {
+		IDENTITY = makeId(name);
+		this.name = name;
+		parent = null;
+
+		if(childNodes != null) {
+			children = new ArrayList<Node>();
+		}
+
+		for(Node child : childNodes) {
+			child.parent = IDENTITY;
+			children.add(child);
+		}
+		entrymap = entries;
+		entrymap.setMasterNode(this);
+	}
+
+
+	public Node(String name, Identity parent, EntryMap entries, Node... childNodes) {
+		IDENTITY = makeId(name);
+		this.name = name;
+		this.parent = parent;
+
+		if(childNodes != null) {
+			children = new ArrayList<Node>();
+		}
+
+		for(Node child : childNodes) {
+			child.parent = IDENTITY;
+			children.add(child);
+		}
+		entrymap = entries;
+		entrymap.setMasterNode(this);
+	}
 
 
 	public Node(String name, Identity parent, Node... childNodes) {
@@ -38,6 +74,8 @@ public class Node {
 			child.parent = IDENTITY;
 			children.add(child);
 		}
+
+		entrymap = new EntryMap(this);
 	}
 
 
@@ -54,13 +92,18 @@ public class Node {
 			child.parent = IDENTITY;
 			children.add(child);
 		}
+
+		entrymap = new EntryMap(this);
 	}
 
 
 	public <V> Node addEntry(Entry<V> entry) {
-		entry.setNodeId(IDENTITY);
-		entries.add(entry); //TODO check duplicates maybe?
-		return this;
+		return entrymap.addEntry(entry);
+	}
+
+
+	public EntryMap getEntryMap() {
+		return entrymap;
 	}
 
 

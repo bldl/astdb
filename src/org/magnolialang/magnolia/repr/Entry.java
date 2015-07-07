@@ -29,6 +29,20 @@ public class Entry<T> {
 	}
 
 
+	public Entry(Key<T> key, T value, Node node) {
+		if(key == null) {
+			throw new IllegalArgumentException("key must be non-null");
+		}
+		if(value == null) {
+			throw new IllegalArgumentException("value must be non-null");
+		}
+
+		KEY = key;
+		VALUE = value;
+		setNodeId(node.IDENTITY);
+	}
+
+
 	/**
 	 * Gets the key of an Entry
 	 * 

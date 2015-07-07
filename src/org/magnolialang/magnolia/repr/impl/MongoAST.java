@@ -13,17 +13,13 @@ import org.magnolialang.magnolia.repr.Kind;
 import org.magnolialang.magnolia.repr.Node;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
 
 /**
- * TODO
- * - ferdiggjør EntryMap/Entry refaktorering og lag en collection for Entry = {
- * nodeId, key, data }
- * 
- * 
  * - sjekk om effektivt, < dump et tre inn og sjekk
  * --- er dette mer effektivt enn vanlig måter å lagre trær på eller ikke?
  * --- eksperimenter med alternativer?
@@ -46,8 +42,9 @@ public class MongoAST implements Ast {
 	public MongoAST(String astName) {
 		NODE_KEY = astName + "graph";
 		ENTRY_KEY = astName + "entry";
-		nodes = DatabaseFactory.getDb().getCollection(NODE_KEY);
-		entries = DatabaseFactory.getDb().getCollection(ENTRY_KEY);
+		DB db = DatabaseFactory.getDb();
+		nodes = db.getCollection(NODE_KEY);
+		entries = db.getCollection(ENTRY_KEY);
 	}
 
 
@@ -306,7 +303,12 @@ public class MongoAST implements Ast {
 
 	@Override
 	public <T> void storeEntry(Entry<T> entry) {
-		entries.insert(entryToDbEntry(entry)); //TODO duplicate check etc.
+		if(entry.getNodeId() != null) {
+			entries.insert(entryToDbEntry(entry)); //TODO duplicate check etc.
+		}
+		else {
+			throw new RuntimeException("Entry cannot be stored without being associated to a node");
+		}
 	}
 
 

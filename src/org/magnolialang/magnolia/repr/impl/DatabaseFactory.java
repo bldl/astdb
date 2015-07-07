@@ -17,7 +17,7 @@ public class DatabaseFactory {
 
 
 	@SuppressWarnings("unused")
-	private static void close() {
+	public static void close() {
 		mongoClient.close();
 		mongoClient = null;
 		db = null;
@@ -30,14 +30,6 @@ public class DatabaseFactory {
 		}
 		return db;
 	}
-
-
-//	public static MongoClient getMongoClient() {
-//		if(mongoClient == null) {
-//			init();
-//		}
-//		return mongoClient;
-//	}
 
 
 	private static void init() {
