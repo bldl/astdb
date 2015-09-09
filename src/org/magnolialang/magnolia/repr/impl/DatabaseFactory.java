@@ -16,7 +16,6 @@ public class DatabaseFactory {
 	private static MongoClient mongoClient;
 
 
-	@SuppressWarnings("unused")
 	public static void close() {
 		mongoClient.close();
 		mongoClient = null;
@@ -40,5 +39,10 @@ public class DatabaseFactory {
 		catch(UnknownHostException ex) {
 			Logger.getLogger(DatabaseFactory.class.getName()).log(Level.SEVERE, null, ex);
 		}
+	}
+
+
+	public static boolean isInitialized() {
+		return db != null;
 	}
 }

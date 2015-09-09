@@ -10,9 +10,31 @@ import java.util.List;
  * @author patmon
  */
 public interface Ast {
-	//TODO problemer som skjer om man lager sykler, DAG, osv. 
+	//TODO problemer som skjer om man lager sykler, DAG, osv.
 	// PS: Lett å sjekke om det er et tre, for da har alle nodene kun en forelder
 	//TODO skriv ut trær fra og med rot/en spesifikk node. BFS/DFS?
+
+
+	/**
+	 * Clears all nodes and entries from this ast
+	 */
+	void clearAst();
+
+
+	/**
+	 * Counts the number of entries stored in the ast
+	 * 
+	 * @return number of entries stored in the ast
+	 */
+	long countEntries();
+
+
+	/**
+	 * Counts the number of nodes stored in the ast
+	 * 
+	 * @return number of nodes stored in the ast
+	 */
+	long countNodes();
 
 
 	/**
@@ -59,6 +81,15 @@ public interface Ast {
 
 
 	/**
+	 * Gets the name of the AST
+	 * 
+	 * @return String astName
+	 *         the name of the ast
+	 */
+	String getAstName();
+
+
+	/**
 	 * Returns the ASTCursor of child number 'i' from the AST
 	 * 
 	 * @param id
@@ -95,14 +126,14 @@ public interface Ast {
 	<V> Entry<V> getEntry(Identity id, Key<V> key);
 
 
-	/**
-	 * TODO what the hell does this do again?
-	 * 
-	 * @param id
-	 * @return
-	 */
-	Kind getKind(Identity id);
-
+//	/**
+//	 * TODO what the hell does this do again? Removed until there is a clear need for it
+//	 * 
+//	 * @param id
+//	 * @return
+//	 */
+//	Kind getKind(Identity id);
+//
 
 	/**
 	 * Returns the node associated with an Identity or null if such a node
@@ -161,6 +192,17 @@ public interface Ast {
 	 *            the Node to be stored
 	 */
 	void storeNode(Node node);
+
+
+	/**
+	 * Stores a node in the AST, and its entries if storeEntires is true.
+	 * 
+	 * @param node
+	 *            the Node to be stored
+	 * @param storeEntries
+	 *            boolean toggling whether to store the node entries or not
+	 */
+	void storeNode(Node node, boolean storeEntries);
 
 
 	/**

@@ -2,6 +2,7 @@ package org.magnolialang.magnolia.repr;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class EntryMap {
 	private Map<Key<?>, Object> data;
@@ -58,7 +59,12 @@ public class EntryMap {
 	public <V> Entry<V> getEntry(Key<V> key) {
 		@SuppressWarnings("unchecked")
 		V v = (V) data.get(key);
-		return (v != null) ? new Entry<V>(key, v) : null;
+		return v != null ? new Entry<V>(key, v) : null;
+	}
+
+
+	public Set<Key<?>> getKeys() {
+		return data.keySet();
 	}
 
 

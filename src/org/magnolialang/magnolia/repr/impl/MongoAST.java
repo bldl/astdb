@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 import org.magnolialang.magnolia.repr.ASTCursor;
 import org.magnolialang.magnolia.repr.Ast;
 import org.magnolialang.magnolia.repr.Entry;
+import org.magnolialang.magnolia.repr.EntryMap;
 import org.magnolialang.magnolia.repr.Identity;
 import org.magnolialang.magnolia.repr.Key;
 import org.magnolialang.magnolia.repr.Kind;
@@ -29,7 +30,7 @@ import com.mongodb.DBObject;
 public class MongoAST implements Ast {
 
 	DBCollection nodes, entries;
-	final String NODE_KEY, ENTRY_KEY;
+	final String NODE_KEY, ENTRY_KEY, AST_NAME;
 
 	protected static final Key<?> DATAKEY = new Key<Object>() {
 	};
@@ -40,11 +41,31 @@ public class MongoAST implements Ast {
 
 
 	public MongoAST(String astName) {
+		AST_NAME = astName;
 		NODE_KEY = astName + "graph";
 		ENTRY_KEY = astName + "entry";
 		DB db = DatabaseFactory.getDb();
 		nodes = db.getCollection(NODE_KEY);
 		entries = db.getCollection(ENTRY_KEY);
+	}
+
+
+	@Override
+	public void clearAst() {
+		nodes.drop();
+		entries.drop();
+	}
+
+
+	@Override
+	public long countEntries() {
+		return entries.count();
+	}
+
+
+	@Override
+	public long countNodes() {
+		return nodes.count();
 	}
 
 
@@ -115,21 +136,30 @@ public class MongoAST implements Ast {
 
 	@Override
 	public <V> boolean existsEntry(Identity id, Key<V> key) {
-		// TODO Auto-generated method stub
-		return false;
+		BasicDBObject dbEntry = new BasicDBObject();
+		dbEntry.append("identity", id);
+		dbEntry.append("key", key);
+		DBCursor dbc = entries.find(dbEntry);
+
+
+		if(dbc == null || !dbc.hasNext()) {
+			return false;
+		}
+		return true;
 	}
 
 
 	@Override
 	public boolean existsNode(Identity id) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+		BasicDBObject node = new BasicDBObject();
+		node.append("identity", id);
+		DBCursor dbc = nodes.find(node);
 
 
-	@Override
-	public ASTCursor getAstCursor(Identity id) {
-		return new ASTCursor(this, id);
+		if(dbc == null || !dbc.hasNext()) {
+			return false;
+		}
+		return true;
 	}
 
 
@@ -140,9 +170,8 @@ public class MongoAST implements Ast {
 
 
 	@Override
-	public ASTCursor getChild(Identity id, int i) {
-		Identity childId = getChildId(id, i);
-		return getAstCursor(childId);
+	public ASTCursor getAstCursor(Identity id) {
+		return new ASTCursor(this, id);
 	}
 
 
@@ -150,6 +179,19 @@ public class MongoAST implements Ast {
 //	protected EntryMap getEntry(Identity id) {
 //		return (EntryMap) getDBNode(id).get("entry");
 //	}
+
+
+	@Override
+	public String getAstName() {
+		return AST_NAME;
+	}
+
+
+	@Override
+	public ASTCursor getChild(Identity id, int i) {
+		Identity childId = getChildId(id, i);
+		return getAstCursor(childId);
+	}
 
 
 	@Override
@@ -183,7 +225,7 @@ public class MongoAST implements Ast {
 
 	private <V> DBObject getDBEntry(Identity id, Key<V> key) {
 		BasicDBObject dbEntry = new BasicDBObject();
-		dbEntry.append("identity", id); //TODO globalize?
+		dbEntry.append("identity", id);
 		dbEntry.append("key", key);
 		DBCursor dbc = entries.find(dbEntry);
 
@@ -200,9 +242,17 @@ public class MongoAST implements Ast {
 	}
 
 
+//
+//	@Override
+//	public Kind getKind(Identity id) { //What is this supposed to do?
+//		//return getEntry(id).get(KINDKEY)
+//		return null;
+//	}
+
+
 	protected DBObject getDBNode(Identity id) {
 		BasicDBObject node = new BasicDBObject();
-		node.append("identity", id); //TODO globalize?
+		node.append("identity", id);
 		DBCursor dbc = nodes.find(node);
 
 
@@ -221,14 +271,6 @@ public class MongoAST implements Ast {
 	@Override
 	public <V> Entry<V> getEntry(Identity id, Key<V> key) {
 		return dbEntryToEntry(getDBEntry(id, key));
-	}
-
-
-	@Override
-	public Kind getKind(Identity id) {
-		//return getEntry(id).get(KINDKEY);
-		// TODO fix this;
-		return null;
 	}
 
 
@@ -252,10 +294,30 @@ public class MongoAST implements Ast {
 	}
 
 
+//
+//	@Override
+//	public Identity makeNode(String name, Identity parent) {
+//		return (Identity) createNode(name, parent).get("identity");
+//	}
+
+//
+//	@Override
+//	public Identity makeNode(String name, Identity parent, EntryMap data) {
+//		BasicDBObject node = createNode(name, parent);
+//		setData(node, data);
+//		return (Identity) node.get("identity");
+//	}
+
+
 	@Override
 	public Identity getParentId(Identity id) {
 		return (Identity) getDBNode(id).get("parent");
 	}
+
+
+//	protected <V> void setData(DBObject node, EntryMap data) {
+//		nodes.update(node, new BasicDBObject().append("entry", data));
+//	}
 
 
 	@Override
@@ -272,21 +334,6 @@ public class MongoAST implements Ast {
 	}
 
 
-//
-//	@Override
-//	public Identity makeNode(String name, Identity parent) {
-//		return (Identity) createNode(name, parent).get("identity");
-//	}
-
-//
-//	@Override
-//	public Identity makeNode(String name, Identity parent, EntryMap data) {
-//		BasicDBObject node = createNode(name, parent);
-//		setData(node, data);
-//		return (Identity) node.get("identity");
-//	}
-
-
 	private BasicDBObject nodeToDbNode(Node node) {
 		BasicDBObject dbNode = new BasicDBObject();
 		dbNode.append("name", node.getName());
@@ -296,15 +343,10 @@ public class MongoAST implements Ast {
 	}
 
 
-//	protected <V> void setData(DBObject node, EntryMap data) {
-//		nodes.update(node, new BasicDBObject().append("entry", data));	//TODO test behaves as expected
-//	}
-
-
 	@Override
 	public <T> void storeEntry(Entry<T> entry) {
 		if(entry.getNodeId() != null) {
-			entries.insert(entryToDbEntry(entry)); //TODO duplicate check etc.
+			entries.insert(entryToDbEntry(entry));
 		}
 		else {
 			throw new RuntimeException("Entry cannot be stored without being associated to a node");
@@ -314,15 +356,30 @@ public class MongoAST implements Ast {
 
 	@Override
 	public void storeNode(Node node) {
-		BasicDBObject dbNode = nodeToDbNode(node); //TODO duplicate check etc.
+		storeNode(node, false);
+	}
+
+
+	@Override
+	public void storeNode(Node node, boolean storeEntries) {
+		BasicDBObject dbNode = nodeToDbNode(node);
 		nodes.insert(dbNode);
+		if(storeEntries) {
+			EntryMap entries = node.getEntryMap();
+			for(Key<?> k : entries.getKeys()) {
+				Entry<?> e = entries.getEntry(k);
+				storeEntry(e);
+			}
+		}
 	}
 
 
 	@Override
 	public void storeSubtree(Node node) {
-		// TODO Auto-generated method stub
-
+		storeNode(node);
+		for(Node child : node.getChildren()) {
+			storeSubtree(child); //TODO eternal loops may occur
+		}
 	}
 
 }

@@ -20,15 +20,8 @@ public class ASTCursor extends AbstractTreeCursor<Identity, Kind, ASTHandle> {
 	}
 
 
-	/*	protected ASTCursor(AbstractTreeCursor<Value, Kind, ASTHandle> src, ASTHandle replacement) {
-		super(src, replacement);
-		// TODO Auto-generated constructor stub
-	}
-
-	*/
 	protected ASTCursor(AbstractTreeCursor<Identity, Kind, ASTHandle> src, boolean fullTree) {
 		super(src, fullTree);
-		// TODO Auto-generated constructor stub
 	}
 
 
@@ -49,7 +42,7 @@ public class ASTCursor extends AbstractTreeCursor<Identity, Kind, ASTHandle> {
 
 
 	@Override
-	public ASTCursor copyAndReplaceSubtree(TreeCursor<Identity, Kind> replacement) { //TODO hvorfor er dette unupported?
+	public ASTCursor copyAndReplaceSubtree(TreeCursor<Identity, Kind> replacement) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -80,19 +73,21 @@ public class ASTCursor extends AbstractTreeCursor<Identity, Kind, ASTHandle> {
 
 
 	public <V> V getData(Key<V> key) {
-		return getCurrent().ast.getData(getCurrent().id, key);
+		ASTHandle current = getCurrent();
+		return current.ast.getEntry(current.id, key).getValue();
 	}
 
 
 	@Override
 	public String getName() {
-		return getCurrent().ast.getName(getCurrent().id);
+		return getCurrent().ast.getNode(getCurrent().id).getName();
 	}
 
 
 	@Override
 	public Kind getType() {
-		return getCurrent().ast.getKind(getCurrent().id);
+		throw new UnsupportedOperationException();
+		// return getCurrent().ast.getKind(getCurrent().id);
 	}
 
 
@@ -103,7 +98,8 @@ public class ASTCursor extends AbstractTreeCursor<Identity, Kind, ASTHandle> {
 
 
 	public boolean hasData(Key<?> key) {
-		return getCurrent().ast.hasData(getCurrent().id, key);
+		Entry<?> e = getCurrent().ast.getEntry(getCurrent().id, key);
+		return e != null && e.getValue() != null;
 	}
 
 
@@ -123,11 +119,9 @@ public class ASTCursor extends AbstractTreeCursor<Identity, Kind, ASTHandle> {
 	public boolean subtreeEquals(TreeHandle<Identity, Kind> other) {
 		if(other instanceof ASTCursor) {
 			ASTHandle otherHandle = ((ASTCursor) other).getCurrent();
-			if(getCurrent().ast == otherHandle.ast && getCurrent().id == otherHandle.id) {
-				return true;
-			}
+			return (getCurrent().ast == otherHandle.ast && getCurrent().id == otherHandle.id);
 		}
-		throw new UnsupportedOperationException(); //TODO hvorfor unsupported istedenfor "false"?
+		throw new UnsupportedOperationException();
 
 	}
 }

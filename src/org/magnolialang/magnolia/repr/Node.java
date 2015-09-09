@@ -1,5 +1,6 @@
 package org.magnolialang.magnolia.repr;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +18,7 @@ import org.magnolialang.magnolia.repr.impl.NamedIdentity;
  * .. children : <List<Node>> // the child-nodes of the Node
  * }
  **/
-public class Node {
+public class Node implements Serializable {
 	final Identity IDENTITY;
 	final String name;
 	Identity parent;
@@ -102,6 +103,11 @@ public class Node {
 	}
 
 
+	public List<Node> getChildren() {
+		return children;
+	}
+
+
 	public EntryMap getEntryMap() {
 		return entrymap;
 	}
@@ -123,7 +129,7 @@ public class Node {
 
 
 	private Identity makeId(String name) {
-		return (name == null || name == "") ? new AnonIdentity() : new NamedIdentity(name); //might want to make id's in another way
+		return name == null || name == "" ? new AnonIdentity() : new NamedIdentity(name); //might want to make id's in another way
 	}
 
 //

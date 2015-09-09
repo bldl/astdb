@@ -19,26 +19,26 @@ public class Basic {
 
 		Ast astDB = new MongoAST("test");
 
-		Node plusNode = 
-				new Node("plusNode", 
+		Node plusNode =
+				new Node("plusNode",
 						new Node("plusA").addEntry(new Entry<Integer>(intkey, 4)),
 						new Node("plusB").addEntry(new Entry<Integer>(intkey, 7)));
 
-		Node multiPropertyNode = 
-				new Node("multiPropertyNode", 
-				new EntryMap(new Entry<Integer>(intkey, 4), 
-							 new Entry<String>(stringkey, "examplestring")));
-		
-		Node multiPropertyNodeWithChildren = 
-				new Node("multiPropertyNode", 
+		Node multiPropertyNode =
+				new Node("multiPropertyNode",
+						new EntryMap(new Entry<Integer>(intkey, 4),
+								new Entry<String>(stringkey, "examplestring")));
+
+		Node multiPropertyNodeWithChildren =
+				new Node("multiPropertyNode",
 						new EntryMap(
-								new Entry<Integer>(intkey, 4), 
+								new Entry<Integer>(intkey, 4),
 								new Entry<String>(stringkey, "examplestring")
 								),
-						new Node("childA").addEntry(new Entry<Integer>(intkey, 7)),
-						new Node("childWithoutEntry"));
-		
-		
+								new Node("childA").addEntry(new Entry<Integer>(intkey, 7)),
+								new Node("childWithoutEntry"));
+
+
 		astDB.storeSubtree(plusNode);
 	}
 }

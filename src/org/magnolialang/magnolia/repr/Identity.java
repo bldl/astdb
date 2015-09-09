@@ -17,6 +17,7 @@ public interface Identity extends Comparable<Identity> {
 	 * An identity domain provides a way to map identities to and from integers.
 	 */
 	static class Domain {
+
 		private final List<Identity> idents = new ArrayList<Identity>();
 		private final Map<Identity, Integer> map = new IdentityHashMap<Identity, Integer>();
 
