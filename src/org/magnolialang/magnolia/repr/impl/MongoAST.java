@@ -12,6 +12,7 @@ import org.magnolialang.magnolia.repr.Identity;
 import org.magnolialang.magnolia.repr.Key;
 import org.magnolialang.magnolia.repr.Kind;
 import org.magnolialang.magnolia.repr.Node;
+import org.magnolialang.magnolia.repr.impl.MongoIdentityDomain.Domain;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -39,7 +40,7 @@ public class MongoAST implements Ast {
 	protected static final Key<Kind> KINDKEY = new Key<Kind>() {
 	};
 
-	protected MongoIdentityDomain domain;
+	protected Domain domain;
 
 
 	public MongoAST(String astName) {
@@ -52,7 +53,7 @@ public class MongoAST implements Ast {
 		nodes = db.getCollection(NODE_KEY);
 		entries = db.getCollection(ENTRY_KEY);
 		identities = db.getCollection(DOMAIN_KEY);
-		domain = MongoIdentityDomain.getInstance(DOMAIN_KEY);
+		domain = MongoIdentityDomain.getDomainInstance(DOMAIN_KEY);
 	}
 
 
