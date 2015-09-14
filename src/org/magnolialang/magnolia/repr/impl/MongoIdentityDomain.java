@@ -70,11 +70,27 @@ public class MongoIdentityDomain {
 		}
 
 
+		/**
+		 * Gets the Identity associated with an integer within this domain
+		 * 
+		 * @param i
+		 *            the integer we're looking up
+		 * @return Identity of the node corresponding to 'i' within this domain
+		 */
 		public synchronized Identity toIdentity(int i) {
 			return idents.get(i);
 		}
 
 
+		/**
+		 * Gets the Identity associated with an integer within this domain
+		 * if it exists, otherwise null
+		 * 
+		 * @param i
+		 *            the integer we're looking up
+		 * @return Identity of the node corresponding to 'i' within this domain
+		 *         OR null if such an Identity does not exist
+		 */
 		public synchronized Identity toIdentityOrNull(int i) {
 			if(i >= 0 && i < idents.size()) {
 				return toIdentity(i);
@@ -85,6 +101,14 @@ public class MongoIdentityDomain {
 		}
 
 
+		/**
+		 * Gets (or creates and returns) the integer associated with an Identity
+		 * within this domain.
+		 * 
+		 * @param id
+		 *            the Identity we want enumerated
+		 * @return integer identity correspoding to the id in this domain
+		 */
 		public synchronized int toInt(Identity id) {
 			Integer i = map.get(id);
 			if(i == null) {
