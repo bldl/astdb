@@ -7,6 +7,8 @@ import org.magnolialang.magnolia.repr.EntryMap;
 import org.magnolialang.magnolia.repr.Key;
 import org.magnolialang.magnolia.repr.Node;
 import org.magnolialang.magnolia.repr.impl.MongoAST;
+import org.magnolialang.magnolia.repr.impl.MongoIdentityDomain;
+import org.magnolialang.magnolia.repr.impl.MongoIdentityDomain.Domain;
 
 public class Basic {
 	static Key<Integer> intkey = new Key<Integer>() {
@@ -19,26 +21,18 @@ public class Basic {
 
 		Ast astDB = new MongoAST("test");
 
-		Node plusNode =
-				new Node("plusNode",
-						new Node("plusA").addEntry(new Entry<Integer>(intkey, 4)),
-						new Node("plusB").addEntry(new Entry<Integer>(intkey, 7)));
+		Node plusNode = new Node("plusNode", new Node("plusA").addEntry(new Entry<Integer>(intkey, 4)), new Node("plusB").addEntry(new Entry<Integer>(intkey, 7)));
 
-		Node multiPropertyNode =
-				new Node("multiPropertyNode",
-						new EntryMap(new Entry<Integer>(intkey, 4),
-								new Entry<String>(stringkey, "examplestring")));
+		Node multiPropertyNode = new Node("multiPropertyNode", new EntryMap(new Entry<Integer>(intkey, 4), new Entry<String>(stringkey, "examplestring")));
 
-		Node multiPropertyNodeWithChildren =
-				new Node("multiPropertyNode",
-						new EntryMap(
-								new Entry<Integer>(intkey, 4),
-								new Entry<String>(stringkey, "examplestring")
-								),
-								new Node("childA").addEntry(new Entry<Integer>(intkey, 7)),
-								new Node("childWithoutEntry"));
+		Node multiPropertyNodeWithChildren = new Node("multiPropertyNode", new EntryMap(new Entry<Integer>(intkey, 4), new Entry<String>(stringkey, "examplestring")), new Node("childA").addEntry(new Entry<Integer>(intkey, 7)), new Node("childWithoutEntry"));
 
 
 		astDB.storeSubtree(plusNode);
+
+
+		MongoIdentityDomain mid = new MongoIdentityDomain();
+		Domain d = mid.getDomainInstance("hei");
+
 	}
 }

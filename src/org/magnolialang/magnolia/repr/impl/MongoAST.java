@@ -29,8 +29,8 @@ import com.mongodb.DBObject;
 
 public class MongoAST implements Ast {
 
-	DBCollection nodes, entries;
-	final String NODE_KEY, ENTRY_KEY, AST_NAME;
+	DBCollection nodes, entries, identities;
+	final String NODE_KEY, ENTRY_KEY, AST_NAME, DOMAIN_KEY;
 
 	protected static final Key<?> DATAKEY = new Key<Object>() {
 	};
@@ -39,14 +39,20 @@ public class MongoAST implements Ast {
 	protected static final Key<Kind> KINDKEY = new Key<Kind>() {
 	};
 
+	protected MongoIdentityDomain domain;
+
 
 	public MongoAST(String astName) {
 		AST_NAME = astName;
 		NODE_KEY = astName + "graph";
 		ENTRY_KEY = astName + "entry";
+		DOMAIN_KEY = astName + "domain";
+
 		DB db = DatabaseFactory.getDb();
 		nodes = db.getCollection(NODE_KEY);
 		entries = db.getCollection(ENTRY_KEY);
+		identities = db.getCollection(DOMAIN_KEY);
+		domain = MongoIdentityDomain.getInstance(DOMAIN_KEY);
 	}
 
 
@@ -54,6 +60,7 @@ public class MongoAST implements Ast {
 	public void clearAst() {
 		nodes.drop();
 		entries.drop();
+		identities.drop();
 	}
 
 

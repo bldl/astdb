@@ -1,61 +1,149 @@
 package org.magnolialang.magnolia.repr.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.magnolialang.magnolia.repr.Identity;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+
 public class MongoIdentityDomain {
 
-	public static MongoIdentityDomain getInstance(String domainName) {
-		if(domain != null && domainName == domain && instance != null) {
-			return instance;
+	public static class Domain {
+		private String domainName;
+		private final List<Identity> idents;
+		private final Map<Identity, Integer> map;
+		private DBCollection dbcollection;
+
+
+		private Domain(String domainName) {
+			// get the domain from MongoDB
+			DB db = DatabaseFactory.getDb();
+			DBCollection dbcollection = db.getCollection(domainName);
+
+			BasicDBObject dbDomain = new BasicDBObject();
+			dbDomain.append("_id", domainName);
+			DBCursor dbc = dbcollection.find(dbDomain);
+
+			if(dbc == null || !dbc.hasNext()) {
+				// the domain doesn't exist yet, so we need to create it
+				map = new IdentityHashMap<Identity, Integer>();
+				idents = new ArrayList<>();
+				return;
+			}
+
+			if(dbc.count() > 1) {
+				throw new RuntimeException("2 domains matched to the same domainName, which shouldn't be possible!");
+			}
+
+			// convert it to the form we need (list/map).
+			DBObject dbDomainObject = dbc.next();
+			map = (Map<Identity, Integer>) dbDomainObject.get(MAP_KEY);
+			idents = (List<Identity>) dbDomainObject.get(IDENTITY_KEY);
 		}
 
-		if(instance == null) {
-			instance = new MongoIdentityDomain(domainName);
+
+		public synchronized void persistChanges() {
+			// TODO optimize so that it only saves changed values, appending them.
+			// 		a way to do this is to store how many Ids existed when we loaded, and then
+			// 		adding any new ids that have been put
+			BasicDBObject dbDomain = new BasicDBObject();
+			dbDomain.append("_id", domainName);
+			dbDomain.append(MAP_KEY, map);
+			dbDomain.append(IDENTITY_KEY, idents);
+			dbcollection.save(dbDomain);
 		}
-		return instance;
+
+
+		public synchronized void persistIdentities(Identity... ids) {
+			for(Identity id : ids) {
+				toInt(id);
+			}
+			persistChanges();
+		}
+
+
+		public synchronized Identity toIdentity(int i) {
+			return idents.get(i);
+		}
+
+
+		public synchronized Identity toIdentityOrNull(int i) {
+			if(i >= 0 && i < idents.size()) {
+				return toIdentity(i);
+			}
+			else {
+				return null;
+			}
+		}
+
+
+		public synchronized int toInt(Identity id) {
+			Integer i = map.get(id);
+			if(i == null) {
+				i = idents.size();
+				idents.add(id);
+				map.put(id, i);
+			}
+			return i;
+		}
+
 	}
 
-	private List<Identity> idents;
-	private Map<Identity, Integer> map;
-	private static MongoIdentityDomain instance = null;
-	private static String domain;
+
+	private static String IDENTITY_KEY = "IDENTITIES_KEY", MAP_KEY = "MAP_KEY";
 
 
-	protected MongoIdentityDomain(String domainName) {
-		domain = domainName;
-		// get the domain from MongoDB.
+	private static Map<String, Domain> domains;
 
-		// if it doesn't exist, create it
+
+	/**
+	 * Gets or creates a domain identified by "domainName" from mongoDB
+	 * 
+	 * @param domainName
+	 *            the name of the domain
+	 * @return Domain the domain identified by domainName
+	 */
+	public static Domain getDomainInstance(String domainName) {
+		return new Domain(domainName);
 	}
 
 
-	public synchronized Identity toIdentity(int i) {
-		return idents.get(i);
+	@SuppressWarnings("unchecked")
+	public MongoIdentityDomain() {
+		domains = new HashMap<String, Domain>();
 	}
 
 
-	public synchronized Identity toIdentityOrNull(int i) {
-		if(i >= 0 && i < idents.size()) {
-			return toIdentity(i);
+	/**
+	 * Gets or creates a domain identified by "domainName" from mongoDB.
+	 * 
+	 * This method stores the domains which have been lookup up locally, so that
+	 * less DB accesses are needed over time.
+	 * 
+	 * @param domainName
+	 *            the name of the domain
+	 * @return Domain the domain identified by domainName
+	 */
+	public Domain getInstance(String domainName) {
+		if(domains == null) {
+			domains = new HashMap<String, Domain>();
+		}
+
+		if(domains.containsKey(domainName)) {
+			return domains.get(domainName);
 		}
 		else {
-			return null;
+			Domain instance = new Domain(domainName);
+			domains.put(domainName, instance);
+			return instance;
 		}
 	}
-
-
-	public synchronized int toInt(Identity id) {
-		Integer i = map.get(id);
-		if(i == null) {
-			i = idents.size();
-			idents.add(id);
-			map.put(id, i);
-		}
-		return i;
-	}
-
-
 }
