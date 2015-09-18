@@ -9,7 +9,7 @@ import org.magnolialang.magnolia.repr.impl.NamedIdentity;
 
 /**
  * Every node in the graph is on the form
- * 
+ *
  * node : {
  * .. identity : <Identity>,
  * .. name : <String>, // name of the node
@@ -98,7 +98,8 @@ public class Node implements Serializable {
 	}
 
 
-	public <V> Node addEntry(Entry<V> entry) {
+	public <V extends Serializable> Node addEntry(Entry<V> entry) {
+		entry.setNodeId(IDENTITY);
 		return entrymap.addEntry(entry);
 	}
 

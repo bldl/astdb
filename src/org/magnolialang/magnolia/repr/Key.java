@@ -1,5 +1,7 @@
 package org.magnolialang.magnolia.repr;
 
-public interface Key<V> {
+import java.io.Serializable;
+
+public interface Key<V> extends Serializable {
 
 }
