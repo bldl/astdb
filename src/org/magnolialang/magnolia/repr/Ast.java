@@ -213,6 +213,14 @@ public interface Ast {
 
 
 	/**
+	 * Checks if the AST has cycles
+	 * 
+	 * @return true if it has cycles
+	 */
+	boolean isTree();
+
+
+	/**
 	 * Stores an entry in the AST. Entry must have a corresponding Node.
 	 * 
 	 * @param entry

@@ -2,8 +2,11 @@ package org.magnolialang.magnolia.repr.impl;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Stack;
 
 import org.magnolialang.magnolia.repr.ASTCursor;
 import org.magnolialang.magnolia.repr.Ast;
@@ -300,6 +303,20 @@ public class MongoAST implements Ast {
 	}
 
 
+	private List<Integer> getRootInts() {
+		BasicDBObject nodeWithParent = new BasicDBObject();
+		nodeWithParent.append("parent", -1);
+		DBCursor dbc = nodes.find(nodeWithParent);
+
+		List<Integer> roots = new ArrayList<Integer>(dbc.count());
+		for(DBObject db : dbc) {
+			int id = (int) db.get("_id");
+			roots.add(id);
+		}
+		return roots;
+	}
+
+
 	@Override
 	public List<Identity> getRoots() {
 		BasicDBObject nodeWithParent = new BasicDBObject();
@@ -350,6 +367,34 @@ public class MongoAST implements Ast {
 		// Checks if either of the trees are a child of the other
 		if(isChildOf(firstTree, secondTree) || isChildOf(secondTree, firstTree)) {
 			return false;
+		}
+
+		return true;
+	}
+
+
+	@Override
+	public boolean isTree() {
+
+		Map<Integer, Boolean> visited = new HashMap<>();
+		Stack<Integer> stack = new Stack<>();
+
+		stack.addAll(getRootInts());
+		while(!stack.isEmpty()) {
+			int node = stack.pop();
+
+			// AST is not a tree if we can visit a node twice
+			if(visited.containsKey(node)) {
+				return false;
+			}
+			visited.put(node, true);
+
+			// Add all children to stack, so that we visit them later
+			DBCursor childNodes = nodes.find(new BasicDBObject("parent", node));
+			while(childNodes.hasNext()) {
+				DBObject dbNode = childNodes.next();
+				stack.push((Integer) dbNode.get("_id"));
+			}
 		}
 
 		return true;
