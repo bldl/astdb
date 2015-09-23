@@ -418,7 +418,19 @@ public class MongoAST implements Ast {
 		Identity firstParent = firstTree.getParent();
 		Identity secondParent = secondTree.getParent();
 
+		// update the in-memory trees
 		firstTree.setParent(secondParent);
 		secondTree.setParent(firstParent);
+
+		// update the db trees
+		BasicDBObject firstDbNode = new BasicDBObject().append("_id", domain.toInt(firstTree.getIDENTITY()));
+		BasicDBObject firstTreeDbChange = new BasicDBObject().append("parent", secondParent);
+		nodes.update(firstDbNode, firstTreeDbChange);
+
+		BasicDBObject secondDbNode = new BasicDBObject().append("_id", domain.toInt(secondTree.getIDENTITY()));
+		BasicDBObject secondTreeDbChange = new BasicDBObject().append("parent", firstParent);
+		nodes.update(secondDbNode, secondTreeDbChange);
+
+
 	}
 }
