@@ -9,7 +9,7 @@ import org.magnolialang.magnolia.repr.impl.NamedIdentity;
 
 /**
  * Every node in the graph is on the form
- *
+ * 
  * node : {
  * .. identity : <Identity>,
  * .. name : <String>, // name of the node
@@ -133,9 +133,15 @@ public class Node implements Serializable {
 		return name == null || name == "" ? new AnonIdentity() : new NamedIdentity(name); //might want to make id's in another way
 	}
 
-//
-//	public void setParent(Identity parent) {
-//		// TODO update children list of previous parent and we also need to be sure that this doesn't allow for mess-ups in database
-//		this.parent = parent;
-//	}
+
+	/**
+	 * Warning: unsafe operation, may cause cycles and invalid trees. Use with
+	 * care
+	 * 
+	 * @param parent
+	 *            the new parent of this node
+	 */
+	public void setParent(Identity parent) {
+		this.parent = parent;
+	}
 }

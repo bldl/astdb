@@ -110,6 +110,10 @@ public class MongoIdentityDomain {
 		 * @return integer identity correspoding to the id in this domain
 		 */
 		public synchronized int toInt(Identity id) {
+			if(id == null) {
+				return -1;
+			}
+
 			Integer i = map.get(id);
 			if(i == null) {
 				i = idents.size();

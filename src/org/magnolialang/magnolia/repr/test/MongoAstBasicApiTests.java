@@ -72,14 +72,17 @@ public class MongoAstBasicApiTests {
 	public void testNodeExists() {
 		Node n = new Node("testnode");
 		Identity n_id = n.getIDENTITY();
-
 		assert (!ast.existsNode(n_id)) : "Node should not exist in ast until it has been inserted";
 
 		ast.storeNode(n);
 		assert (ast.existsNode(n_id)) : "Node hasn't been inserted properly";
-
 		ast.deleteNode(n_id);
 		assert (!ast.existsNode(n_id)) : "Node should not exist in ast after being deleted";
+
+		ast.storeNode(n);
+		assert (ast.existsNode(n_id)) : "Node hasn't been inserted properly";
+		ast.clearAst();
+		assert (!ast.existsNode(n_id)) : "Node should not exist in ast after we clear it";
 	}
 
 

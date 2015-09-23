@@ -26,7 +26,7 @@ import com.mongodb.DBObject;
  * - sjekk om effektivt, < dump et tre inn og sjekk
  * --- er dette mer effektivt enn vanlig måter å lagre trær på eller ikke?
  * --- eksperimenter med alternativer?
- *
+ * 
  */
 
 public class MongoAST implements Ast {
@@ -78,9 +78,73 @@ public class MongoAST implements Ast {
 	}
 
 
+	@SuppressWarnings("unchecked")
+	private <V extends Serializable> Entry<V> dbEntryToEntry(DBObject dbEntry) {
+		Key<V> key = (Key<V>) dbEntry.get("key");
+		V value = (V) dbEntry.get("value");
+		Identity node_id = domain.toIdentity((int) dbEntry.get("node_id"));
+
+		return new Entry<V>(key, value, node_id);
+	}
+
+
+	private Node dbNodeToNode(DBObject dbNode) {
+		return new Node((String) dbNode.get("name"), domain.toIdentity((int) dbNode.get("identity")));
+	}
+
+
+	/**
+	 * Deletes all entries corresponding to a Node with Identity "id"
+	 * 
+	 * @param id
+	 *            the Identity to which the Entries belong
+	 */
+	private void deleteEntries(Identity id) {
+		BasicDBObject dbEntry = new BasicDBObject().append("node_id", domain.toInt(id));
+		DBCursor dbc = entries.find(dbEntry);
+
+		while(dbc.hasNext()) {
+			entries.remove(dbc.next());
+		}
+	}
+
+
+	/**
+	 * Deletes the Node "dbobject" from the nodes collection, and all its
+	 * child-nodes and entries.
+	 * 
+	 * @param dbobject
+	 *            the DBObject which we're deleting, together with all its
+	 *            sub-entries and sub-nodes
+	 */
+	private void deleteNode(DBObject dbobject) {
+		int nodeId = (int) dbobject.get("_id");
+
+		//find all children
+		BasicDBObject childnodes = new BasicDBObject().append("parent", nodeId);
+		DBCursor dbc = nodes.find(childnodes);
+		while(dbc.hasNext()) {
+			deleteNode(dbc.next()); // and then proceed to delete them
+		}
+
+		deleteEntries(domain.toIdentity(nodeId)); // delete entries corresponding to our node
+		nodes.remove(dbobject); // before removing our node
+	}
+
+
 	@Override
 	public void deleteNode(Identity nodeId) {
 		deleteNode(getDBNode(nodeId));
+	}
+
+
+	private <V extends Serializable> BasicDBObject entryToDbEntry(Entry<V> entry) {
+		//TODO can duplicates happen? Need to test
+		BasicDBObject dbNode = new BasicDBObject();
+		dbNode.append("node_id", domain.toInt(entry.getNodeId()));
+		dbNode.append("value", entry.getValue());
+		dbNode.append("key", entry.getKey().toString());
+		return dbNode;
 	}
 
 
@@ -160,6 +224,50 @@ public class MongoAST implements Ast {
 	}
 
 
+	private <V> DBObject getDBEntry(Identity id, Key<V> key) {
+		BasicDBObject dbEntry = new BasicDBObject();
+		dbEntry.append("_id", domain.toInt(id));
+		dbEntry.append("key", key);
+		DBCursor dbc = entries.find(dbEntry);
+
+
+		if(dbc == null || !dbc.hasNext()) {
+			throw new NoSuchElementException();
+		}
+
+		if(dbc.count() > 1) {
+			throw new RuntimeException("2 elements matched to same id!");
+		}
+
+		return dbc.next();
+	}
+
+
+//
+//	@Override
+//	public Kind getKind(Identity id) { //What is this supposed to do?
+//		//return getEntry(id).get(KINDKEY)
+//		return null;
+//	}
+
+
+	protected DBObject getDBNode(Identity id) {
+		BasicDBObject node = new BasicDBObject();
+		node.append("_id", domain.toInt(id));
+		DBCursor dbc = nodes.find(node);
+
+		if(dbc == null || !dbc.hasNext()) {
+			throw new NoSuchElementException();
+		}
+
+		if(dbc.count() > 1) {
+			throw new RuntimeException("2 elements matched to same id!");
+		}
+
+		return dbc.next();
+	}
+
+
 	@Override
 	public <V extends Serializable> Entry<V> getEntry(Identity id, Key<V> key) {
 		return dbEntryToEntry(getDBEntry(id, key));
@@ -208,6 +316,58 @@ public class MongoAST implements Ast {
 
 
 	@Override
+	public boolean isChildOf(Node tree, Node node) {
+		// check if the node is equal to the root
+		if(node.equals(tree)) {
+			return true;
+		}
+
+		// check if the node is part of the subtrees
+		for(Node child : tree.getChildren()) {
+			if(isChildOf(child, node)) {
+				return true;
+			}
+		}
+
+		// the node wasn't part of the tree, so it is not a child of it
+		return false;
+	}
+
+
+	@Override
+	public boolean isRootNode(Node node) {
+		return node.getParent() == null;
+	}
+
+
+	@Override
+	public boolean isSafeToSwapParents(Node firstTree, Node secondTree) {
+		// it is safe to swap them if either one of them is a rootNode
+		if(isRootNode(firstTree) || isRootNode(secondTree)) {
+			return true;
+		}
+
+		// Checks if either of the trees are a child of the other
+		if(isChildOf(firstTree, secondTree) || isChildOf(secondTree, firstTree)) {
+			return false;
+		}
+
+		return true;
+	}
+
+
+	private BasicDBObject nodeToDbNode(Node node) {
+		BasicDBObject dbNode = new BasicDBObject();
+
+		dbNode.append("_id", domain.toInt(node.getIDENTITY()));
+		dbNode.append("name", node.getName());
+		dbNode.append("parent", domain.toInt(node.getParent()));
+
+		return dbNode;
+	}
+
+
+	@Override
 	public <T extends Serializable> void storeEntry(Entry<T> entry) {
 		if(entry.getNodeId() != null) {
 			entries.insert(entryToDbEntry(entry));
@@ -216,14 +376,6 @@ public class MongoAST implements Ast {
 			throw new RuntimeException("Entry cannot be stored without being associated to a node");
 		}
 	}
-
-
-//
-//	@Override
-//	public Kind getKind(Identity id) { //What is this supposed to do?
-//		//return getEntry(id).get(KINDKEY)
-//		return null;
-//	}
 
 
 	@Override
@@ -253,100 +405,6 @@ public class MongoAST implements Ast {
 	}
 
 
-	@SuppressWarnings("unchecked")
-	private <V extends Serializable> Entry<V> dbEntryToEntry(DBObject dbEntry) {
-		Key<V> key = (Key<V>) dbEntry.get("key");
-		V value = (V) dbEntry.get("value");
-		Identity node_id = domain.toIdentity((int) dbEntry.get("node_id"));
-
-		return new Entry<V>(key, value, node_id);
-	}
-
-
-	private Node dbNodeToNode(DBObject dbNode) {
-		return new Node((String) dbNode.get("name"), domain.toIdentity((int) dbNode.get("identity")));
-	}
-
-
-	/**
-	 * Deletes all entries corresponding to a Node with Identity "id"
-	 *
-	 * @param id
-	 *            the Identity to which the Entries belong
-	 */
-	private void deleteEntries(Identity id) {
-		BasicDBObject dbEntry = new BasicDBObject().append("node_id", domain.toInt(id));
-		DBCursor dbc = entries.find(dbEntry);
-
-		while(dbc.hasNext()) {
-			entries.remove(dbc.next());
-		}
-	}
-
-
-	/**
-	 * Deletes the Node "dbobject" from the nodes collection, and all its
-	 * child-nodes and entries.
-	 *
-	 * @param dbobject
-	 *            the DBObject which we're deleting, together with all its
-	 *            sub-entries and sub-nodes
-	 */
-	private void deleteNode(DBObject dbobject) {
-		int nodeId = (int) dbobject.get("_id");
-
-		//find all children
-		BasicDBObject childnodes = new BasicDBObject().append("parent", nodeId);
-		DBCursor dbc = nodes.find(childnodes);
-		while(dbc.hasNext()) {
-			deleteNode(dbc.next()); // and then proceed to delete them
-		}
-
-		deleteEntries(domain.toIdentity(nodeId)); // delete entries corresponding to our node
-		nodes.remove(dbobject); // before removing our node
-	}
-
-
-	private <V extends Serializable> BasicDBObject entryToDbEntry(Entry<V> entry) {
-		//TODO can duplicates happen? Need to test
-		BasicDBObject dbNode = new BasicDBObject();
-		dbNode.append("node_id", domain.toInt(entry.getNodeId()));
-		dbNode.append("value", entry.getValue());
-		dbNode.append("key", entry.getKey().toString());
-		return dbNode;
-	}
-
-
-	private <V> DBObject getDBEntry(Identity id, Key<V> key) {
-		BasicDBObject dbEntry = new BasicDBObject();
-		dbEntry.append("_id", domain.toInt(id));
-		dbEntry.append("key", key);
-		DBCursor dbc = entries.find(dbEntry);
-
-
-		if(dbc == null || !dbc.hasNext()) {
-			throw new NoSuchElementException();
-		}
-
-		if(dbc.count() > 1) {
-			throw new RuntimeException("2 elements matched to same id!");
-		}
-
-		return dbc.next();
-	}
-
-
-	private BasicDBObject nodeToDbNode(Node node) {
-		BasicDBObject dbNode = new BasicDBObject();
-
-		dbNode.append("_id", domain.toInt(node.getIDENTITY()));
-		dbNode.append("name", node.getName());
-		dbNode.append("parent", domain.toInt(node.getParent()));
-
-		return dbNode;
-	}
-
-
 	private void storeSubtreeHelper(Node node) {
 		storeNode(node);
 		for(Node child : node.getChildren()) {
@@ -355,21 +413,12 @@ public class MongoAST implements Ast {
 	}
 
 
-	protected DBObject getDBNode(Identity id) {
-		BasicDBObject node = new BasicDBObject();
-		node.append("_id", domain.toInt(id));
-		DBCursor dbc = nodes.find(node);
+	@Override
+	public void swapParents(Node firstTree, Node secondTree) {
+		Identity firstParent = firstTree.getParent();
+		Identity secondParent = secondTree.getParent();
 
-		if(dbc == null || !dbc.hasNext()) {
-			throw new NoSuchElementException();
-		}
-
-		if(dbc.count() > 1) {
-			throw new RuntimeException("2 elements matched to same id!");
-		}
-
-		return dbc.next();
+		firstTree.setParent(secondParent);
+		secondTree.setParent(firstParent);
 	}
-
-
 }
