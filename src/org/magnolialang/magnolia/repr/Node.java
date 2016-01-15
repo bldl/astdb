@@ -144,4 +144,16 @@ public class Node implements Serializable {
 	public void setParent(Identity parent) {
 		this.parent = parent;
 	}
+
+
+	/**
+	 * Warning: unsafe operation, may cause cycles and invalid trees. Use with
+	 * care
+	 * 
+	 * @param parent
+	 *            the new parent of this node
+	 */
+	public void setParent(Node parent) {
+		setParent(parent.getIDENTITY());
+	}
 }

@@ -12,7 +12,7 @@ public class EntryMap {
 
 	/**
 	 * Make a new EntryMap belonging to a node with a list of entries
-	 *
+	 * 
 	 * @param entries
 	 *            The entries which this map is initialized with
 	 */
@@ -26,7 +26,7 @@ public class EntryMap {
 
 	/**
 	 * Make a new EntryMap belonging to a node with a list of entries
-	 *
+	 * 
 	 * @param node
 	 *            The node which this map belongs to
 	 * @param entries
@@ -50,7 +50,7 @@ public class EntryMap {
 	/**
 	 * Returns the Entry<V> associated with some Key<V>, or null if such an
 	 * entry doesn't exist
-	 *
+	 * 
 	 * @param key
 	 *            The key which belongs to some entry
 	 * @return entry

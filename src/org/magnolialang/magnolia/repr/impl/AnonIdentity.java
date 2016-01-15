@@ -4,7 +4,9 @@ import java.io.Serializable;
 
 import org.magnolialang.magnolia.repr.Identity;
 
-public class AnonIdentity implements Identity, Serializable {
+import com.mongodb.BasicDBObject;
+
+public class AnonIdentity extends BasicDBObject implements Identity, Serializable {
 
 
 	/**

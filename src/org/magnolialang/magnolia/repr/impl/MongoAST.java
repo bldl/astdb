@@ -16,7 +16,7 @@ import org.magnolialang.magnolia.repr.Identity;
 import org.magnolialang.magnolia.repr.Key;
 import org.magnolialang.magnolia.repr.Kind;
 import org.magnolialang.magnolia.repr.Node;
-import org.magnolialang.magnolia.repr.impl.MongoIdentityDomain.Domain;
+import org.magnolialang.magnolia.repr.impl.MongoIdentityDomain.IdentityDomain;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -44,7 +44,7 @@ public class MongoAST implements Ast {
 	DBCollection nodes, entries, identities;
 	final String NODE_KEY, ENTRY_KEY, AST_NAME, DOMAIN_KEY;
 
-	protected Domain domain;
+	protected IdentityDomain domain;
 
 
 	public MongoAST(String astName) {
@@ -446,7 +446,6 @@ public class MongoAST implements Ast {
 	@Override
 	public void storeSubtree(Node node) {
 		storeSubtreeHelper(node);
-		domain.persistChanges();
 	}
 
 
@@ -469,11 +468,11 @@ public class MongoAST implements Ast {
 
 		// update the db trees
 		BasicDBObject firstDbNode = new BasicDBObject().append("_id", domain.toInt(firstTree.getIDENTITY()));
-		BasicDBObject firstTreeDbChange = new BasicDBObject().append("parent", secondParent);
+		BasicDBObject firstTreeDbChange = new BasicDBObject().append("parent", domain.toInt(secondParent));
 		nodes.update(firstDbNode, firstTreeDbChange);
 
 		BasicDBObject secondDbNode = new BasicDBObject().append("_id", domain.toInt(secondTree.getIDENTITY()));
-		BasicDBObject secondTreeDbChange = new BasicDBObject().append("parent", firstParent);
+		BasicDBObject secondTreeDbChange = new BasicDBObject().append("parent", domain.toInt(firstParent));
 		nodes.update(secondDbNode, secondTreeDbChange);
 
 

@@ -8,7 +8,7 @@ import org.magnolialang.magnolia.repr.Key;
 import org.magnolialang.magnolia.repr.Node;
 import org.magnolialang.magnolia.repr.impl.MongoAST;
 import org.magnolialang.magnolia.repr.impl.MongoIdentityDomain;
-import org.magnolialang.magnolia.repr.impl.MongoIdentityDomain.Domain;
+import org.magnolialang.magnolia.repr.impl.MongoIdentityDomain.IdentityDomain;
 
 public class Basic {
 	static Key<Integer> intkey = new Key<Integer>() {
@@ -32,7 +32,7 @@ public class Basic {
 
 
 		MongoIdentityDomain mid = new MongoIdentityDomain();
-		Domain d = mid.getDomainInstance("hei");
+		IdentityDomain d = mid.getDomainInstance("hei");
 
 	}
 }

@@ -14,19 +14,21 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
+
+// TODO actually persist once in a while / all the time
 public class MongoIdentityDomain {
 
-	public static class Domain {
+	public static class IdentityDomain {
 		private String domainName;
 		private final List<Identity> idents;
 		private final Map<Identity, Integer> map;
 		private DBCollection dbcollection;
 
 
-		private Domain(String domainName) {
+		private IdentityDomain(String domainName) {
 			// get the domain from MongoDB
 			DB db = DatabaseFactory.getDb();
-			DBCollection dbcollection = db.getCollection(domainName);
+			dbcollection = db.getCollection(domainName);
 
 			BasicDBObject dbDomain = new BasicDBObject();
 			dbDomain.append("_id", domainName);
@@ -56,9 +58,14 @@ public class MongoIdentityDomain {
 			// 		adding any new ids that have been put
 			BasicDBObject dbDomain = new BasicDBObject();
 			dbDomain.append("_id", domainName);
+
+			// TODO there is an issue here because MongoDB doesn't know how to
+			// case NamedIdentity to a String. Will fix later)
 			dbDomain.append(MAP_KEY, map);
 			dbDomain.append(IDENTITY_KEY, idents);
 			dbcollection.save(dbDomain);
+
+			//TODO actually use
 		}
 
 
@@ -107,7 +114,7 @@ public class MongoIdentityDomain {
 		 * 
 		 * @param id
 		 *            the Identity we want enumerated
-		 * @return integer identity correspoding to the id in this domain
+		 * @return integer identity corresponding to the id in this domain
 		 */
 		public synchronized int toInt(Identity id) {
 			if(id == null) {
@@ -129,7 +136,7 @@ public class MongoIdentityDomain {
 	private static String IDENTITY_KEY = "IDENTITIES_KEY", MAP_KEY = "MAP_KEY";
 
 
-	private static Map<String, Domain> domains;
+	private static Map<String, IdentityDomain> domains;
 
 
 	/**
@@ -139,14 +146,14 @@ public class MongoIdentityDomain {
 	 *            the name of the domain
 	 * @return Domain the domain identified by domainName
 	 */
-	public static Domain getDomainInstance(String domainName) {
-		return new Domain(domainName);
+	public static IdentityDomain getDomainInstance(String domainName) {
+		return new IdentityDomain(domainName);
 	}
 
 
 	@SuppressWarnings("unchecked")
 	public MongoIdentityDomain() {
-		domains = new HashMap<String, Domain>();
+		domains = new HashMap<String, IdentityDomain>();
 	}
 
 
@@ -160,16 +167,16 @@ public class MongoIdentityDomain {
 	 *            the name of the domain
 	 * @return Domain the domain identified by domainName
 	 */
-	public Domain getInstance(String domainName) {
+	public IdentityDomain getInstance(String domainName) {
 		if(domains == null) {
-			domains = new HashMap<String, Domain>();
+			domains = new HashMap<String, IdentityDomain>();
 		}
 
 		if(domains.containsKey(domainName)) {
 			return domains.get(domainName);
 		}
 		else {
-			Domain instance = new Domain(domainName);
+			IdentityDomain instance = new IdentityDomain(domainName);
 			domains.put(domainName, instance);
 			return instance;
 		}

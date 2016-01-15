@@ -55,6 +55,16 @@ public class MongoAstBasicApiTests {
 
 
 	@Test
+	public void testDifferentNodesHaveDifferentIdentities() {
+		Node right = new Node("right");
+		Node left = new Node("left");
+
+		assert (right.getIDENTITY().equals(right.getIDENTITY()));
+		assert (!right.getIDENTITY().equals(left.getIDENTITY())) : "left and right should have different identities";
+	}
+
+
+	@Test
 	public void testNodeCount() {
 		Node n = new Node("testnode");
 		Identity n_id = n.getIDENTITY();
@@ -90,6 +100,58 @@ public class MongoAstBasicApiTests {
 	public void testNoInitialDbData() {
 		assert (ast.countEntries() == 0) : "no entries should exist in a freshly made AST";
 		assert (ast.countNodes() == 0) : "no nodes should exist in a freshly made AST";
+	}
+
+
+	@Test
+	public void testSwapParents() {
+		/*
+		 *  Makes a tree that looks like the following
+		 * 			
+		 * 				 (root)
+		 * 				/	   \
+		 * 	 	   (left)	  (right)
+		 * 		 	/			|	 \
+		 * 	 (leftChild) (rightChild)(rightChild2)
+		 * 
+		 * 
+		 *  Calling swapParents(leftChild, rightChild) should give us
+		 *  
+		 * 				 (root)
+		 * 				/	   \
+		 * 	 	   (left)	  (right)
+		 * 		 	/			|	 \
+		 * 	 (rightChild) (leftChild)(rightChild2)
+		 * 
+		 * 
+		 */
+
+		Node leftChild = new Node("leftChild");
+		Node left = new Node("left");
+		Node rightChild = new Node("rightChild");
+		Node rightChild2 = new Node("rightChild2");
+		Node right = new Node("right");
+		Node root = new Node("root");
+
+		assert (!right.getIDENTITY().equals(left.getIDENTITY())) : "test impossible if right and left identities are equal";
+
+		leftChild.setParent(left);
+		rightChild.setParent(right);
+		rightChild2.setParent(right);
+		left.setParent(root);
+		right.setParent(root);
+
+		ast.storeSubtree(root);
+		ast.swapParents(leftChild, rightChild);
+		assert (leftChild.getParent() == right.getIDENTITY()) : "leftChild did not swap parents with rightChild";
+		assert (rightChild.getParent() == left.getIDENTITY()) : "rightChild did not swap parents with leftChild";
+		assert (rightChild2.getParent() == right.getIDENTITY()) : "rightChild2 had its parent changed, which it should not";
+
+		// Swapping parents twice should return the original parents
+		ast.swapParents(leftChild, rightChild);
+		assert (leftChild.getParent() == left.getIDENTITY()) : "leftChild doesn't have its original parent after 2 swaps";
+		assert (rightChild.getParent() == right.getIDENTITY()) : "rightChild doesn't have its original parent after 2 swaps";
+		assert (rightChild2.getParent() == right.getIDENTITY()) : "rightChild2 had its parent changed, which it should not";
 	}
 
 }
