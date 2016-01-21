@@ -1,8 +1,6 @@
 package org.magnolialang.magnolia.repr;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.magnolialang.magnolia.repr.impl.AnonIdentity;
 import org.magnolialang.magnolia.repr.impl.NamedIdentity;
@@ -19,81 +17,46 @@ import org.magnolialang.magnolia.repr.impl.NamedIdentity;
  * }
  **/
 public class Node implements Serializable {
-	final Identity IDENTITY;
-	final String name;
-	Identity parent;
-	List<Node> children;
-	EntryMap entrymap;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5558098146365749731L;
+	protected final Identity IDENTITY;
+	protected final String name;
+	protected Identity parent;
+	protected EntryMap entrymap;
 
 
-	public Node(String name, EntryMap entries, Node... childNodes) {
+	public Node(String name) {
 		IDENTITY = makeId(name);
 		this.name = name;
 		parent = null;
-
-		if(childNodes != null) {
-			children = new ArrayList<Node>();
-		}
-
-		for(Node child : childNodes) {
-			child.parent = IDENTITY;
-			children.add(child);
-		}
-		entrymap = entries;
-		entrymap.setMasterNode(this);
-	}
-
-
-	public Node(String name, Identity parent, EntryMap entries, Node... childNodes) {
-		IDENTITY = makeId(name);
-		this.name = name;
-		this.parent = parent;
-
-		if(childNodes != null) {
-			children = new ArrayList<Node>();
-		}
-
-		for(Node child : childNodes) {
-			child.parent = IDENTITY;
-			children.add(child);
-		}
-		entrymap = entries;
-		entrymap.setMasterNode(this);
-	}
-
-
-	public Node(String name, Identity parent, Node... childNodes) {
-		IDENTITY = makeId(name);
-		this.name = name;
-		this.parent = parent;
-
-		if(childNodes != null) {
-			children = new ArrayList<Node>();
-		}
-
-		for(Node child : childNodes) {
-			child.parent = IDENTITY;
-			children.add(child);
-		}
-
 		entrymap = new EntryMap(this);
 	}
 
 
-	public Node(String name, Node... childNodes) {
+	public Node(String name, EntryMap entries, Identity parent) {
 		IDENTITY = makeId(name);
 		this.name = name;
-		parent = null;
+		this.parent = parent;
 
-		if(childNodes != null) {
-			children = new ArrayList<Node>();
-		}
+		entrymap = entries;
+		entrymap.setMasterNode(this);
+	}
 
-		for(Node child : childNodes) {
-			child.parent = IDENTITY;
-			children.add(child);
-		}
 
+	public Node(String name, Identity parent) {
+		IDENTITY = makeId(name);
+		this.name = name;
+		this.parent = parent;
+		entrymap = new EntryMap(this);
+	}
+
+
+	public Node(String name, Identity identity, Identity parentId) {
+		this.IDENTITY = identity;
+		this.name = name;
+		parent = parentId;
 		entrymap = new EntryMap(this);
 	}
 
@@ -101,11 +64,6 @@ public class Node implements Serializable {
 	public <V extends Serializable> Node addEntry(Entry<V> entry) {
 		entry.setNodeId(IDENTITY);
 		return entrymap.addEntry(entry);
-	}
-
-
-	public List<Node> getChildren() {
-		return children;
 	}
 
 
@@ -141,8 +99,8 @@ public class Node implements Serializable {
 	 * @param parent
 	 *            the new parent of this node
 	 */
-	public void setParent(Identity parent) {
-		this.parent = parent;
+	public void setParent(Identity identity) {
+		this.parent = identity;
 	}
 
 
@@ -153,7 +111,10 @@ public class Node implements Serializable {
 	 * @param parent
 	 *            the new parent of this node
 	 */
-	public void setParent(Node parent) {
-		setParent(parent.getIDENTITY());
+	public void setParent(Node parentNode) {
+		if(parentNode == null) {
+			return;
+		}
+		setParent(parentNode.IDENTITY);
 	}
 }

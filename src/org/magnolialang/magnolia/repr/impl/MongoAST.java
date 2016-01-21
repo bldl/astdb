@@ -92,7 +92,10 @@ public class MongoAST implements Ast {
 
 
 	private Node dbNodeToNode(DBObject dbNode) {
-		return new Node((String) dbNode.get("name"), domain.toIdentity((int) dbNode.get("identity")));
+		String name = (String) dbNode.get("name");
+		Identity identity = domain.toIdentity((int) dbNode.get("_id"));
+		Identity parent = domain.toIdentity((int) dbNode.get("parent"));
+		return new Node(name, identity, parent);
 	}
 
 
@@ -227,6 +230,47 @@ public class MongoAST implements Ast {
 	}
 
 
+	public List<Node> getChildren(Identity id) {
+		BasicDBObject childnode = new BasicDBObject();
+		childnode.append("parent", domain.toInt(id));
+		DBCursor dbc = nodes.find(childnode);
+		List<Node> children = new ArrayList<Node>();
+
+
+		if(dbc == null || !dbc.hasNext()) {
+			return children;
+		}
+
+		for(DBObject obj : dbc) {
+			children.add(dbNodeToNode(obj));
+		}
+		return children;
+	}
+
+
+	public List<Node> getChildren(Node node) {
+		return getChildren(node.getIDENTITY());
+	}
+
+
+	public List<Identity> getChildrenIdentities(Identity id) {
+		BasicDBObject childnode = new BasicDBObject();
+		childnode.append("parent", domain.toInt(id));
+		DBCursor dbc = nodes.find(childnode);
+		List<Identity> children = new ArrayList<Identity>();
+
+
+		if(dbc == null || !dbc.hasNext()) {
+			return children;
+		}
+
+		for(DBObject obj : dbc) {
+			children.add(domain.toIdentity((int) obj.get("_id")));
+		}
+		return children;
+	}
+
+
 	private <V> DBObject getDBEntry(Identity id, Key<V> key) {
 		BasicDBObject dbEntry = new BasicDBObject();
 		dbEntry.append("_id", domain.toInt(id));
@@ -333,15 +377,15 @@ public class MongoAST implements Ast {
 
 
 	@Override
-	public boolean isChildOf(Node tree, Node node) {
+	public boolean isDescendantOf(Identity parent, Identity descendant) {
 		// check if the node is equal to the root
-		if(node.equals(tree)) {
+		if(descendant.equals(parent)) {
 			return true;
 		}
 
 		// check if the node is part of the subtrees
-		for(Node child : tree.getChildren()) {
-			if(isChildOf(child, node)) {
+		for(Identity child : getChildrenIdentities(parent)) {
+			if(isDescendantOf(child, descendant)) {
 				return true;
 			}
 		}
@@ -365,7 +409,7 @@ public class MongoAST implements Ast {
 		}
 
 		// Checks if either of the trees are a child of the other
-		if(isChildOf(firstTree, secondTree) || isChildOf(secondTree, firstTree)) {
+		if(isDescendantOf(firstTree.getIDENTITY(), secondTree.getIDENTITY()) || isDescendantOf(secondTree.getIDENTITY(), firstTree.getIDENTITY())) {
 			return false;
 		}
 
@@ -444,14 +488,32 @@ public class MongoAST implements Ast {
 
 
 	@Override
-	public void storeSubtree(Node node) {
-		storeSubtreeHelper(node);
+	public void storeNodes(boolean storeEntries, Node... nodes) {
+		if(nodes == null || nodes.length < 1) {
+			return;
+		}
+		for(Node node : nodes) {
+			storeNode(node, storeEntries);
+		}
+	}
+
+
+	@Override
+	public void storeNodes(Node... nodes) {
+		storeNodes(true, nodes);
+	}
+
+
+	@Override
+	public void storeSubtree(Node node) { // TODO impossible atm, so THIS method is all wrong
+		throw new RuntimeException("method not implemented yet");
+//		storeSubtreeHelper(node);
 	}
 
 
 	private void storeSubtreeHelper(Node node) {
 		storeNode(node);
-		for(Node child : node.getChildren()) {
+		for(Node child : getChildren(node.getIDENTITY())) { // TODO seriously needs fixing
 			storeSubtreeHelper(child); //TODO eternal loops may occur
 		}
 	}
@@ -459,20 +521,23 @@ public class MongoAST implements Ast {
 
 	@Override
 	public void swapParents(Node firstTree, Node secondTree) {
-		Identity firstParent = firstTree.getParent();
-		Identity secondParent = secondTree.getParent();
+		Identity firstParentId = firstTree.getParent();
+		Identity secondParentId = secondTree.getParent();
+
+		Node firstParentNode = getNode(firstParentId);
+		Node secondParentNode = getNode(secondParentId);
 
 		// update the in-memory trees
-		firstTree.setParent(secondParent);
-		secondTree.setParent(firstParent);
+		firstTree.setParent(secondParentNode);
+		secondTree.setParent(firstParentNode);
 
 		// update the db trees
 		BasicDBObject firstDbNode = new BasicDBObject().append("_id", domain.toInt(firstTree.getIDENTITY()));
-		BasicDBObject firstTreeDbChange = new BasicDBObject().append("parent", domain.toInt(secondParent));
+		BasicDBObject firstTreeDbChange = new BasicDBObject().append("parent", domain.toInt(secondParentId));
 		nodes.update(firstDbNode, firstTreeDbChange);
 
 		BasicDBObject secondDbNode = new BasicDBObject().append("_id", domain.toInt(secondTree.getIDENTITY()));
-		BasicDBObject secondTreeDbChange = new BasicDBObject().append("parent", domain.toInt(firstParent));
+		BasicDBObject secondTreeDbChange = new BasicDBObject().append("parent", domain.toInt(firstParentId));
 		nodes.update(secondDbNode, secondTreeDbChange);
 
 

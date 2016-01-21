@@ -180,13 +180,13 @@ public interface Ast {
 	/**
 	 * Checks if a node is a childnode of some tree
 	 * 
-	 * @param tree
+	 * @param parent
 	 *            the tree we will traverse
-	 * @param node
+	 * @param descendant
 	 *            the node we wish to check if is part of the tree
 	 * @return true of the node is part of the tree
 	 */
-	boolean isChildOf(Node tree, Node node);
+	boolean isDescendantOf(Identity parent, Identity descendant);
 
 
 	/**
@@ -213,9 +213,9 @@ public interface Ast {
 
 
 	/**
-	 * Checks if the AST has cycles
+	 * Checks if the AST is a true
 	 * 
-	 * @return true if it has cycles
+	 * @return false if it has cycles, true otherwise
 	 */
 	boolean isTree();
 
@@ -247,6 +247,26 @@ public interface Ast {
 	 *            boolean toggling whether to store the node entries or not
 	 */
 	void storeNode(Node node, boolean storeEntries);
+
+
+	/**
+	 * Store all nodes, with or without their entries
+	 * 
+	 * @param storeEntries
+	 *            Whether or not we store the nodes entries
+	 * @param nodes
+	 *            The nodes to be stored
+	 */
+	public void storeNodes(boolean storeEntries, Node... nodes);
+
+
+	/**
+	 * Store all nodes "nodes" with their entries
+	 * 
+	 * @param nodes
+	 *            the nodes to be stored (with their entries)
+	 */
+	public void storeNodes(Node... nodes);
 
 
 	/**

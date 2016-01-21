@@ -13,7 +13,7 @@ import org.magnolialang.magnolia.repr.impl.MongoAST;
 
 import com.mongodb.DB;
 
-public class MongoAstBasicApiTests {
+public class MongoAstTests {
 
 
 	private static DB db;
@@ -51,16 +51,6 @@ public class MongoAstBasicApiTests {
 	@Test
 	public void testDbIsInitialized() {
 		assert (db != null) : "DB hasn't been initialized properly";
-	}
-
-
-	@Test
-	public void testDifferentNodesHaveDifferentIdentities() {
-		Node right = new Node("right");
-		Node left = new Node("left");
-
-		assert (right.getIDENTITY().equals(right.getIDENTITY()));
-		assert (!right.getIDENTITY().equals(left.getIDENTITY())) : "left and right should have different identities";
 	}
 
 
@@ -141,11 +131,13 @@ public class MongoAstBasicApiTests {
 		left.setParent(root);
 		right.setParent(root);
 
-		ast.storeSubtree(root);
+		ast.storeNodes(leftChild, rightChild, rightChild2, left, right, root);
+
 		ast.swapParents(leftChild, rightChild);
 		assert (leftChild.getParent() == right.getIDENTITY()) : "leftChild did not swap parents with rightChild";
 		assert (rightChild.getParent() == left.getIDENTITY()) : "rightChild did not swap parents with leftChild";
 		assert (rightChild2.getParent() == right.getIDENTITY()) : "rightChild2 had its parent changed, which it should not";
+
 
 		// Swapping parents twice should return the original parents
 		ast.swapParents(leftChild, rightChild);
