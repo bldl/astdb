@@ -4,6 +4,7 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 import org.magnolialang.magnolia.repr.Entry;
+import org.magnolialang.magnolia.repr.EntryMap;
 import org.magnolialang.magnolia.repr.Key;
 import org.magnolialang.magnolia.repr.Node;
 
@@ -15,6 +16,10 @@ public class EntryTests {
 
 	@SuppressWarnings("serial")
 	protected static final Key<Integer> ikey = new Key<Integer>() {
+	};
+
+	@SuppressWarnings("serial")
+	protected static final Key<Long> lkey = new Key<Long>() {
 	};
 
 
@@ -33,7 +38,6 @@ public class EntryTests {
 		Node a = new Node("a");
 		Node b = new Node("b");
 
-
 		Entry<String> es = new Entry<>(skey, "string", a);
 		assert (es.getNodeId().equals(a.getIDENTITY())) : "Node incorrectly stored";
 
@@ -50,6 +54,18 @@ public class EntryTests {
 
 		ei.setNodeId(b.getIDENTITY());
 		assert (ei.getNodeId().equals(b.getIDENTITY())) : "Entry didn't get update which node it belongs to";
+
+		Entry<String> es2 = new Entry<>(skey, "a");
+		Entry<Integer> ei2 = new Entry<>(ikey, 3);
+		Entry<Long> el2 = new Entry<>(lkey, 2l);
+		EntryMap em = new EntryMap(es2);
+		Node c = new Node("c", em, null);
+		c.addEntry(ei2);
+		em.addEntry(el2);
+
+		assert (es2.getNodeId() == c.getIDENTITY());
+		assert (ei2.getNodeId() == c.getIDENTITY());
+		assert (el2.getNodeId() == c.getIDENTITY());
 	}
 
 

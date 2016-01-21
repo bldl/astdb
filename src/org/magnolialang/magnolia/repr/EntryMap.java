@@ -79,7 +79,10 @@ public class EntryMap {
 	}
 
 
-	public void setMasterNode(Node newMasterNode) {
-		masterNode = newMasterNode;
+	public void setMasterNode(Node masterNode) {
+		if(this.masterNode != null) {
+			throw new RuntimeException("EntryMap are supposed to belong to 1 and only 1 Node");
+		}
+		this.masterNode = masterNode;
 	}
 }
