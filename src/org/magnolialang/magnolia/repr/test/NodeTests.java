@@ -33,7 +33,6 @@ public class NodeTests {
 	@Test
 	public void testNodeName() {
 		Node node = new Node("name");
-		assert (node.getName().equals("name"));
+		assert (node.getName().equals("name")) : "Name incorrectly stored in Node";
 	}
-
 }
