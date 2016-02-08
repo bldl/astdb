@@ -225,8 +225,21 @@ public interface Ast {
 	 * 
 	 * @param entry
 	 *            the Entry to be stored
+	 * @param node
+	 *            the Node which the entry belongs to
 	 */
-	<T extends Serializable> void storeEntry(Entry<T> entry);
+	<T extends Serializable> void storeEntry(Entry<T> entry, Identity node);
+
+
+	/**
+	 * Stores an entry in the AST. Entry must have a corresponding Node.
+	 * 
+	 * @param entry
+	 *            the Entry to be stored
+	 * @param node
+	 *            the Node which the entry belongs to
+	 */
+	<T extends Serializable> void storeEntry(Entry<T> entry, Node node);
 
 
 	/**

@@ -144,10 +144,10 @@ public class MongoAST implements Ast {
 	}
 
 
-	private <V extends Serializable> BasicDBObject entryToDbEntry(Entry<V> entry) {
+	private <V extends Serializable> BasicDBObject entryToDbEntry(Entry<V> entry, Identity nodeId) {
 		//TODO can duplicates happen? Need to test
 		BasicDBObject dbNode = new BasicDBObject();
-		dbNode.append("node_id", domain.toInt(entry.getNodeId()));
+		dbNode.append("node_id", domain.toInt(nodeId));
 		dbNode.append("value", entry.getValue());
 		dbNode.append("key", entry.getKey().toString());
 		return dbNode;
@@ -457,12 +457,20 @@ public class MongoAST implements Ast {
 
 
 	@Override
-	public <T extends Serializable> void storeEntry(Entry<T> entry) {
-		if(entry.getNodeId() != null) {
-			entries.insert(entryToDbEntry(entry));
+	public <T extends Serializable> void storeEntry(Entry<T> entry, Identity nodeId) {
+		if(nodeId != null) {
+			entries.insert(entryToDbEntry(entry, nodeId));
 		}
 		else {
 			throw new RuntimeException("Entry cannot be stored without being associated to a node");
+		}
+	}
+
+
+	@Override
+	public <T extends Serializable> void storeEntry(Entry<T> entry, Node node) {
+		if(node != null) {
+			storeEntry(entry, node.getIDENTITY());
 		}
 	}
 
@@ -481,7 +489,7 @@ public class MongoAST implements Ast {
 			EntryMap entries = node.getEntryMap();
 			for(Key<? extends Serializable> k : entries.getKeys()) {
 				Entry<?> e = entries.getEntry(k);
-				storeEntry(e);
+				storeEntry(e, node.getIDENTITY());
 			}
 		}
 	}

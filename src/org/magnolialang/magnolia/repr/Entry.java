@@ -120,17 +120,6 @@ public class Entry<T extends Serializable> {
 
 
 	/**
-	 * Gets the node to which this entry belongs
-	 * 
-	 * @return Identity the Identity of the node which this belongs to, or null
-	 *         if the entry doesn't yet belong to a Node
-	 */
-	public Identity getNodeId() {
-		return NODEID;
-	}
-
-
-	/**
 	 * Gets the value stored in this entry
 	 * 
 	 * @return T the value stored in this entry
